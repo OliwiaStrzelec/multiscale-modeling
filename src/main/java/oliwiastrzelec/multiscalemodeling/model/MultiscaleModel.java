@@ -91,12 +91,20 @@ public class MultiscaleModel {
     }
 
     public void growGrains() {
+        int k = 0;
         Cell[][] previousArray = array;
         Cell[][] currentArray = generateEmptyArray();
-        for (int i = 1; i < sizeX - 1; i++) {
-            for (int j = 1; j < sizeY - 1; j++) {
-                if (previousArray[i][j].getId() != 0) {
-                    mooreNeighbourhood(i, j, previousArray, currentArray);
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+//                if (previousArray[i][j].getId() != 0) {
+//                    mooreNeighbourhood(i, j, previousArray, currentArray);
+//                }
+                if (previousArray[i][j].getId() == 0) {
+                    fillMooreNeighbour(i, j, previousArray, currentArray);
+                }
+                else {
+                    currentArray[i][j].setId(previousArray[i][j].getId());
+                    currentArray[i][j].setRgb(previousArray[i][j].getRgb());
                 }
             }
         }
@@ -124,20 +132,22 @@ public class MultiscaleModel {
 
 
     private void fillMooreNeighbour(int x, int y, Cell[][] previousArray, Cell[][] currentArray) {
-        if ((x == 0 || x == sizeX - 1) || (y == 0 || y == sizeY - 1)) {
-            return;
-        }
-//        array[x][y] = generateRandomCell(x, y);
         List<Cell> grainsCount = new ArrayList<>();
         Cell c;
         for (int i = x - 1; i <= x + 1; i++) {
             for (int j = y - 1; j <= y + 1; j++) {
+                if(i < 0 || i >= sizeX || j < 0 || j >= sizeY){
+                    continue;
+                }
                 if ((c = previousArray[i][j]).getId() != 0) {
                     grainsCount.add(c);
                 }
             }
         }
-        System.out.println(grainsCount);
+        if(grainsCount.isEmpty()){
+            return;
+        }
+
         c = mostCommon(grainsCount);
         currentArray[x][y].setId(c.getId());
         currentArray[x][y].setRgb(c.getRgb());
@@ -199,6 +209,7 @@ public class MultiscaleModel {
     public void clear() {
         array = generateEmptyArray();
         grainsGenerated = false;
+        arrayFilled = false;
     }
 
     public void printArray() {
