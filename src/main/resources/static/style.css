@@ -1,0 +1,33 @@
+h1 {
+    color: whitesmoke;
+    text-align: center;
+}
+h2{
+    color: whitesmoke;
+}
+
+.div-border {
+    border-top: 1px solid black;
+}
+
+a:link, a:hover, a:visited, a:active {
+    text-decoration: none;
+    color: whitesmoke;
+}
+
+p {
+    color: whitesmoke;
+    margin-bottom: 10px;
+}
+
+label {
+    color: whitesmoke;
+}
+
+.div-canvas {
+   text-align:center;
+}
+
+canvas {
+   display: inline;
+}

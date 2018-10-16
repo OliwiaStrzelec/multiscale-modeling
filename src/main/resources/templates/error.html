@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Multiscale Modeling</title>
+    <link rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css}"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
+    <link rel="stylesheet" th:href="@{style.css}" href="style.css"/>
+</head>
+<body class="bg-dark mx-4">
+
+<nav class="navbar bg-dark nav-dark">
+    <div>
+        <a class="navbar-brand" href="#">Oliwia Strzelec</a>
+    </div>
+</nav>
+
+<div class="row bg-dark mt-3 mb-5 justify-content-sm-center">
+    <h1>Multiscale Modeling</h1>
+</div>
+
+<div class="row bg-dark bg-dark div-border">
+    <div class="container-fluid mt-3 justify-content-sm-center">
+        <h1>Error</h1>
+    </div>
+    <div th:if="${message} != null" class="p-5 container-fluid">
+        <div class="container-fluid mb-5">
+            <h2>Error code: <span th:text="${status}"></span></h2>
+        </div>
+        <div class="container-fluid mb-5">
+            <p th:text="${message}"></p>
+        </div>
+    </div>
+
+</div>
+<div class="row bg-dark bg-dark div-border">
+    <div class="container-fluid mb-5 p-5">
+        <a th:href="@{/}">Take me back</a>
+    </div>
+</div>
+
+
+<script th:src="@{https://code.jquery.com/jquery-3.2.1.slim.min.js}"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script th:src="@{https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js}"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js}"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+</body>
+</html>

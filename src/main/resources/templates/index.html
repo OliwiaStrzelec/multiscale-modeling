@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Multiscale Modeling</title>
+    <link rel="stylesheet" th:href="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css}"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"/>
+    <link rel="stylesheet" th:href="@{style.css}" href="style.css"/>
+</head>
+<body class="bg-dark mx-4">
+
+<nav class="navbar bg-dark nav-dark">
+    <div>
+        <a class="navbar-brand" href="#">Oliwia Strzelec</a>
+    </div>
+</nav>
+
+<div class="row bg-dark mt-3 mb-5 justify-content-sm-center">
+    <h1>Multiscale Modeling</h1>
+</div>
+
+<div class="row bg-dark bg-dark div-border">
+    <div class="col-lg-4 mt-5">
+        <div th:if="${!grainsGenerated}" class="form-group px-5 mb-2 justify-content-sm-center">
+            <form  th:action="@{/generateGrains}" method="post">
+
+                <div class="mb-3">
+                    <label for="numberOfNucleons">Number of grains</label>
+                    <input th:name="numberOfNucleons" th:value="*{numberOfNucleons}" id="numberOfNucleons" type="number"
+                           class="form-control" placeholder="Number of grains" min="1" max="50" required="required">
+                </div>
+
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Generate grains</button>
+                </center>
+            </form>
+        </div>
+
+        <div th:if="${grainsGenerated && !arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center">
+            <form th:action="@{/growGrains}" method="post">
+                <div class="mb-3">
+                    <label for="numberOfIterations">Number of iterations</label>
+                    <input th:name="numberOfIterations" th:value="*{numberOfIterations}" id="numberOfIterations" type="number"
+                           class="form-control" placeholder="Number of iterations" min="1" max="50" required="required">
+                </div>
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Grow grains</button>
+                </center>
+            </form>
+        </div>
+        <div th:if="${arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center">
+            <form th:action="@{/exportDatafile}" method="post">
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Export datafile</button>
+                </center>
+            </form>
+        </div>
+
+        <!--<div th:if="${arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center">-->
+            <!--<form th:action="@{/exportBitmap}" method="post">-->
+                <!--<center>-->
+                    <!--<button type="submit" class="btn btn-lg btn-secondary">Export bitmap</button>-->
+                <!--</center>-->
+            <!--</form>-->
+        <!--</div>-->
+
+        <div th:if="${grainsGenerated}" class="form-group px-5 mb-2 justify-content-sm-center">
+            <form th:action="@{/clear}" method="post">
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Clear</button>
+                </center>
+            </form>
+        </div>
+
+        <!--<div class="form-group px-5 mb-2 justify-content-sm-center">-->
+            <!--<form th:action="@{/importDatafile}" method="post" enctype="multipart/form-data">-->
+
+                <!--<div class="mb-3">-->
+                    <!--<label for="file">Datafile to import</label>-->
+                    <!--<input type="file" name="file" class="form-control-file" id="file" aria-describedby="fileHelp">-->
+                <!--</div>-->
+                <!--<div class="mb-3">-->
+                    <!--<label for="rowsToSkip">Rows to skip</label>-->
+                    <!--<input th:name="rowsToSkip" th:value="*{rowsToSkip}" id="rowsToSkip" type="number"-->
+                           <!--class="form-control" placeholder="Rows to skip" min="1" max="10" required="required">-->
+                <!--</div>-->
+                <!--<center>-->
+                    <!--<button type="submit" class="btn btn-lg btn-secondary">Import</button>-->
+                <!--</center>-->
+            <!--</form>-->
+        <!--</div>-->
+    </div>
+
+    <div class="col-lg-8 bg-dark p-5 justify-content-sm-center div-canvas">
+        <!--<div class="justify-content-sm-center bg-light border">-->
+        <canvas class="bg-light" id="canvas" width="600" height="600"></canvas>
+        <!--</div>-->
+    </div>
+</div>
+<script type="text/javascript" th:src="@{index.js}"></script>
+<script th:src="@{https://code.jquery.com/jquery-3.2.1.slim.min.js}"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script th:src="@{https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js}"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script th:src="@{https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js}"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+<script th:inline="javascript">
+    var sizeX = [[${sizeX}]];
+    var sizeY = [[${sizeY}]];
+    var array = [[${array}]];
+    drawCells(sizeX, sizeY, array);
+
+</script>
+</body>
+</html>
