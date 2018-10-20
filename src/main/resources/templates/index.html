@@ -24,8 +24,8 @@
 
 <div class="row bg-dark bg-dark div-border">
     <div class="col-lg-4 mt-5">
-        <div th:if="${!grainsGenerated}" class="form-group px-5 mb-2 justify-content-sm-center">
-            <form  th:action="@{/generateGrains}" method="post">
+        <div th:if="${!grainsGenerated}" class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/generateGrains}" method="post">
 
                 <div class="mb-3">
                     <label for="numberOfNucleons">Number of grains</label>
@@ -38,12 +38,41 @@
                 </center>
             </form>
         </div>
+        <div th:if="${ !inclusionAdded && ((!grainsGenerated && !arrayFilled) || arrayFilled)}"
+             class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/generateInclusions}" method="post">
 
-        <div th:if="${grainsGenerated && !arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center">
+                <div class="mb-3">
+                    <label for="numberOfInclusions">Number of inclusions</label>
+                    <input th:name="numberOfInclusions" th:value="*{numberOfInclusions}" id="numberOfInclusions"
+                           type="number"
+                           class="form-control" placeholder="Number of inclusions" min="1" max="10" required="required">
+                </div>
+                <div class="mb-3">
+                    <label for="sizeOfInclusions">Size of inclusions</label>
+                    <input th:name="sizeOfInclusions" th:value="*{sizeOfInclusions}" id="sizeOfInclusions" type="number"
+                           class="form-control" placeholder="Size of inclusions" min="1" max="15" required="required">
+                </div>
+                <div>
+                    <label for="shapeOfInclusions">Shape of inclusions</label>
+                    <select class="custom-select mb-3" name="shapeOfInclusions" id="shapeOfInclusions">
+                        <option th:each="shape : ${T(oliwiastrzelec.multiscalemodeling.model.Shape).values()}"
+                                th:value="${shape}"
+                                th:text="${shape.shape}"></option>
+                    </select>
+                </div>
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Add inclusions</button>
+                </center>
+            </form>
+        </div>
+
+        <div th:if="${grainsGenerated && !arrayFilled}" class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/growGrains}" method="post">
                 <div class="mb-3">
                     <label for="numberOfIterations">Number of iterations</label>
-                    <input th:name="numberOfIterations" th:value="*{numberOfIterations}" id="numberOfIterations" type="number"
+                    <input th:name="numberOfIterations" th:value="*{numberOfIterations}" id="numberOfIterations"
+                           type="number"
                            class="form-control" placeholder="Number of iterations" min="1" max="50" required="required">
                 </div>
                 <center>
@@ -60,11 +89,11 @@
         </div>
 
         <!--<div th:if="${arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center">-->
-            <!--<form th:action="@{/exportBitmap}" method="post">-->
-                <!--<center>-->
-                    <!--<button type="submit" class="btn btn-lg btn-secondary">Export bitmap</button>-->
-                <!--</center>-->
-            <!--</form>-->
+        <!--<form th:action="@{/exportBitmap}" method="post">-->
+        <!--<center>-->
+        <!--<button type="submit" class="btn btn-lg btn-secondary">Export bitmap</button>-->
+        <!--</center>-->
+        <!--</form>-->
         <!--</div>-->
 
         <div th:if="${grainsGenerated}" class="form-group px-5 mb-2 justify-content-sm-center">
@@ -76,21 +105,21 @@
         </div>
 
         <!--<div class="form-group px-5 mb-2 justify-content-sm-center">-->
-            <!--<form th:action="@{/importDatafile}" method="post" enctype="multipart/form-data">-->
+        <!--<form th:action="@{/importDatafile}" method="post" enctype="multipart/form-data">-->
 
-                <!--<div class="mb-3">-->
-                    <!--<label for="file">Datafile to import</label>-->
-                    <!--<input type="file" name="file" class="form-control-file" id="file" aria-describedby="fileHelp">-->
-                <!--</div>-->
-                <!--<div class="mb-3">-->
-                    <!--<label for="rowsToSkip">Rows to skip</label>-->
-                    <!--<input th:name="rowsToSkip" th:value="*{rowsToSkip}" id="rowsToSkip" type="number"-->
-                           <!--class="form-control" placeholder="Rows to skip" min="1" max="10" required="required">-->
-                <!--</div>-->
-                <!--<center>-->
-                    <!--<button type="submit" class="btn btn-lg btn-secondary">Import</button>-->
-                <!--</center>-->
-            <!--</form>-->
+        <!--<div class="mb-3">-->
+        <!--<label for="file">Datafile to import</label>-->
+        <!--<input type="file" name="file" class="form-control-file" id="file" aria-describedby="fileHelp">-->
+        <!--</div>-->
+        <!--<div class="mb-3">-->
+        <!--<label for="rowsToSkip">Rows to skip</label>-->
+        <!--<input th:name="rowsToSkip" th:value="*{rowsToSkip}" id="rowsToSkip" type="number"-->
+        <!--class="form-control" placeholder="Rows to skip" min="1" max="10" required="required">-->
+        <!--</div>-->
+        <!--<center>-->
+        <!--<button type="submit" class="btn btn-lg btn-secondary">Import</button>-->
+        <!--</center>-->
+        <!--</form>-->
         <!--</div>-->
     </div>
 
@@ -115,6 +144,9 @@
     var sizeY = [[${sizeY}]];
     var array = [[${array}]];
     drawCells(sizeX, sizeY, array);
+
+
+
 
 </script>
 </body>

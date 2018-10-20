@@ -4,9 +4,6 @@ import lombok.Getter;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.*;
 import java.util.*;
 
 public class MultiscaleModel {
@@ -23,6 +20,8 @@ public class MultiscaleModel {
     private boolean grainsGenerated = false;
     @Getter
     private boolean arrayFilled = false;
+    @Getter
+    private boolean inclusionAdded = false;
 
     private MultiscaleModel() {
     }
@@ -39,11 +38,12 @@ public class MultiscaleModel {
         int x;
         int y;
         int i = numberOfNucleons - 1;
+        Cell c;
         // for(int i = numberOfNucleons - 1; i >= 0; i--){
         while (!cells.isEmpty()) {
             x = (int) (Math.floor(Math.random() * (sizeX - 2)) + 1);
             y = (int) (Math.floor(Math.random() * (sizeY - 2)) + 1);
-            if (array[x][y].getId() == 0) {
+            if ((c = array[x][y]).getId() == 0 && !c.getState().equals(Cell.State.INCLUSION)) {
                 array[x][y] = cells.remove(i--);
             }
         }
@@ -94,17 +94,18 @@ public class MultiscaleModel {
         int k = 0;
         Cell[][] previousArray = array;
         Cell[][] currentArray = generateEmptyArray();
+        Cell c;
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
 //                if (previousArray[i][j].getId() != 0) {
 //                    mooreNeighbourhood(i, j, previousArray, currentArray);
 //                }
-                if (previousArray[i][j].getId() == 0) {
+                if ((c = previousArray[i][j]).getId() == 0) {
                     fillMooreNeighbour(i, j, previousArray, currentArray);
-                }
-                else {
-                    currentArray[i][j].setId(previousArray[i][j].getId());
-                    currentArray[i][j].setRgb(previousArray[i][j].getRgb());
+                } else {
+                    currentArray[i][j].setId(c.getId());
+                    currentArray[i][j].setRgb(c.getRgb());
+                    currentArray[i][j].setState(c.getState());
                 }
             }
         }
@@ -136,38 +137,21 @@ public class MultiscaleModel {
         Cell c;
         for (int i = x - 1; i <= x + 1; i++) {
             for (int j = y - 1; j <= y + 1; j++) {
-                if(i < 0 || i >= sizeX || j < 0 || j >= sizeY){
+                if (i < 0 || i >= sizeX || j < 0 || j >= sizeY) {
                     continue;
                 }
-                if ((c = previousArray[i][j]).getId() != 0) {
+                if ((c = previousArray[i][j]).getId() != 0 && c.getId() != -1) {
                     grainsCount.add(c);
                 }
             }
         }
-        if(grainsCount.isEmpty()){
+        if (grainsCount.isEmpty()) {
             return;
         }
 
-        c = mostCommon(grainsCount);
+        c = MultiscaleModelHelper.mostCommon(grainsCount);
         currentArray[x][y].setId(c.getId());
         currentArray[x][y].setRgb(c.getRgb());
-    }
-
-    private Cell mostCommon(List<Cell> grainsCount) {
-        BidiMap<Cell, Integer> bidiMap = new TreeBidiMap<>(toFrequencyMap(grainsCount));
-        return bidiMap.getKey(Collections.max(bidiMap.values()));
-    }
-
-    static private Map<Cell, Integer> toFrequencyMap(List<Cell> cells) {
-        Map<Cell, Integer> cellIntegerMap = new HashMap<Cell, Integer>();
-        cells.forEach(cell -> {
-            if (!cellIntegerMap.containsKey(cell)) {
-                cellIntegerMap.put(cell, 1);
-            } else {
-                cellIntegerMap.put(cell, cellIntegerMap.get(cell) + 1);
-            }
-        });
-        return cellIntegerMap;
     }
 
     public static void main(String[] args) {
@@ -177,14 +161,14 @@ public class MultiscaleModel {
         cells.add(new Cell(2));
         cells.add(new Cell(2));
         cells.add(new Cell(3));
-        System.out.println(toFrequencyMap(cells));
-        BidiMap<Cell, Integer> bidiMap = new TreeBidiMap<>(toFrequencyMap(cells));
+        System.out.println(MultiscaleModelHelper.toFrequencyMap(cells));
+        BidiMap<Cell, Integer> bidiMap = new TreeBidiMap<>(MultiscaleModelHelper.toFrequencyMap(cells));
         System.out.println(Collections.max(bidiMap.values()));
     }
 
     private Cell generateRandomCell(int x, int y) {
         Cell cell = new Cell(Integer.valueOf(String.valueOf(x) + String.valueOf(y)));
-        cell.setRgb(generateRandomColor());
+        cell.setRgb(MultiscaleModelHelper.generateRandomColor());
         return cell;
     }
 
@@ -192,63 +176,142 @@ public class MultiscaleModel {
         List<Cell> cells = new ArrayList<>();
         for (int i = 1; i <= numberOfNucleons; i++) {
             Cell c = new Cell(i);
-            c.setRgb(generateRandomColor());
+            c.setRgb(MultiscaleModelHelper.generateRandomColor());
             cells.add(c);
         }
         return cells;
-    }
-
-    private int[] generateRandomColor() {
-        int[] color = new int[3];
-        color[0] = (int) (Math.floor(Math.random() * 255) + 1);
-        color[1] = 0;//(int) (Math.floor(Math.random() * 255) + 1);
-        color[2] = (int) (Math.floor(Math.random() * 255) + 1);
-        return color;
     }
 
     public void clear() {
         array = generateEmptyArray();
         grainsGenerated = false;
         arrayFilled = false;
+        inclusionAdded = false;
     }
 
-    public void printArray() {
-        List<Cell[]> list = new ArrayList(Arrays.asList(array));
-        list.forEach(cells -> System.out.println(Arrays.asList(cells)));
-    }
-
-    public InputStream export(Type type) throws FileNotFoundException {
-        if (type.equals(Type.DATA_FILE)) {
-            return null;
+    public void generateInclusions(int numberOfInclusions, float sizeOfInclusions, Shape shapeOfInclusions) {
+        if (inclusionAdded) {
+            return;
         }
-        return null;
+        if (shapeOfInclusions.equals(Shape.CIRCLE)) {
+            addCircleInclusions(numberOfInclusions, sizeOfInclusions);
+        } else {
+            addSquareInclusions(numberOfInclusions, sizeOfInclusions);
+        }
+        inclusionAdded = true;
     }
 
-    public String getDataFile() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("x\ty\tid\tr\tg\tb\n");
-        Cell cell;
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                cell = array[i][j];
-                sb.append(i + "\t" + j + "\t" + cell.getId() + "\t" + cell.getRgb()[0] + "\t" + cell.getRgb()[1] + "\t" + cell.getRgb()[2] + "\n");
+    private void addSquareInclusions(int numberOfInclusions, float sizeOfInclusions) {
+        int a = (int) (sizeOfInclusions / Math.sqrt(2));
+        if(arrayFilled){
+            addSquareInclusionsForFilledArray(numberOfInclusions, a, detectBorders());
+        }
+        if(!grainsGenerated && !arrayFilled){
+            addSquareInclusionsForEmptyArray(numberOfInclusions, a);
+        }
+    }
+
+
+    private void addSquareInclusionsForFilledArray(int numberOfInclusions, int a, Cell[][] borders) {
+        int x;
+        int y;
+        for(int i = 0; i < numberOfInclusions; i++){
+            x = getX(a);
+            y = getY(a);
+            while (array[x][y].getState().equals(Cell.State.INCLUSION) || !isGrainsBorder(x, y, array[x][y].getId())) {
+                x = getX(a);
+                y = getY(a);
+            }
+            fillSquare(a, x, y);
+        }
+    }
+
+    private void addSquareInclusionsForEmptyArray(int numberOfInclusions, int a) {
+        int x, y;
+        for(int i = 0; i < numberOfInclusions; i++){
+            x = getX(a);
+            y = getY(a);
+            while (array[x][y].getState().equals(Cell.State.INCLUSION)) {
+                x = getX(a);
+                y = getY(a);
+            }
+            fillSquare((int) a, x, y);
+        }
+    }
+
+    private void fillSquare(int a, int x, int y) {
+        for (int i = x; i <= x + a && i < sizeX; i++) {
+            for (int j = y; j <= y + a && j < sizeY; j++) {
+                array[i][j] = new Cell(Cell.State.INCLUSION);
             }
         }
-        return sb.toString();
     }
 
-    public File getBitmap() throws IOException {
-        BufferedImage image = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_4BYTE_ABGR);
-        Cell cell;
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                cell = array[i][j];
-//                image.setRGB(i, j, ((cell.getRgb()[0]&0x0ff)<<16)|((cell.getRgb()[1]&0x0ff)<<8)|(cell.getRgb()[2]&0x0ff));
-                image.setRGB(i, j, (cell.getRgb()[0] << 16 | cell.getRgb()[1] << 8 | cell.getRgb()[2]));
+    private int getY(int a) {
+        return (int) (Math.floor(Math.random() * (sizeY - 2 - a)) + 1);
+    }
+
+    private int getX(int a) {
+        return (int) (Math.floor(Math.random() * (sizeX - 2 - a)) + 1);
+    }
+
+    private boolean isGrainsBorder(int x, int y, int id){
+        for(int i = x; i <= x + 2; i++){
+            if(i < 0 || i >= sizeX){
+                continue;
+            }
+            if(array[i][y].getId() != id){
+                return true;
             }
         }
-        File file = new File("bitmap.png");
-        ImageIO.write(image, "png", file);
-        return file;
+        for(int i = y; i <= y + 2; i++){
+            if(i < 0 || i >= sizeY){
+                continue;
+            }
+            if(array[x][i].getId() != id){
+                return false;
+            }
+        }
+        return false;
     }
+
+
+    private void fillIfGrainsBorder(int x, int y, int id, Cell[][] borderCells) {
+        if (!arrayFilled && !grainsGenerated) {
+            return;
+        }
+        for(int i = x - 1; i <= x + 1; i++){
+            if(i < 0 || i >= sizeX){
+                continue;
+            }
+            if(array[i][y].getId() != id){
+                borderCells[x][y] = new Cell(Cell.State.BORDER);
+            }
+        }
+        for(int i = y - 1; i <= y + 1; i++){
+            if(i < 0 || i >= sizeY){
+                continue;
+            }
+            if(array[x][i].getId() != id){
+                borderCells[x][y] = new Cell(Cell.State.BORDER);
+            }
+        }
+    }
+
+
+    private Cell[][] detectBorders() {
+        Cell[][] borderCells = generateEmptyArray();
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                fillIfGrainsBorder(i, j, array[i][j].getId(), borderCells);
+            }
+        }
+        return borderCells;
+    }
+
+    private void addCircleInclusions(int numberOfInclusions, float sizeOfInclusions) {
+
+    }
+
+
 }
