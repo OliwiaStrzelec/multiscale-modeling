@@ -57,9 +57,9 @@ public class MultiscaleModelHelper {
 
     public static int[] generateRandomColor() {
         int[] color = new int[3];
-        color[0] = (int) (Math.floor(Math.random() * 255) + 1);
+        color[0] = (int) (Math.floor(Math.random() * 220) + 36);
         color[1] = 0;//(int) (Math.floor(Math.random() * 255) + 1);
-        color[2] = (int) (Math.floor(Math.random() * 255) + 1);
+        color[2] = (int) (Math.floor(Math.random() * 220) + 36);
         return color;
     }
 
