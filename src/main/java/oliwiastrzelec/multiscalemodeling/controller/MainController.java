@@ -64,7 +64,7 @@ public class MainController {
         model.addAttribute("array", MultiscaleModel.getInstance().getArray());
         model.addAttribute("grainsGenerated", MultiscaleModel.getInstance().isGrainsGenerated());
         model.addAttribute("arrayFilled", MultiscaleModel.getInstance().isArrayFilled());
-        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
+//        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
     }
 
 }

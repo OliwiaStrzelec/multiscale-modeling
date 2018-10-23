@@ -20,8 +20,8 @@ public class MultiscaleModel {
     private boolean grainsGenerated = false;
     @Getter
     private boolean arrayFilled = false;
-    @Getter
-    private boolean inclusionAdded = false;
+//    @Getter
+//    private boolean inclusionAdded = false;
 
     private MultiscaleModel() {
     }
@@ -174,19 +174,19 @@ public class MultiscaleModel {
         array = generateEmptyArray();
         grainsGenerated = false;
         arrayFilled = false;
-        inclusionAdded = false;
+//        inclusionAdded = false;
     }
 
     public void generateInclusions(int numberOfInclusions, float sizeOfInclusions, Shape shapeOfInclusions) {
-        if (inclusionAdded) {
-            return;
-        }
+//        if (inclusionAdded) {
+//            return;
+//        }
         if (shapeOfInclusions.equals(Shape.CIRCLE)) {
             addCircleInclusions(numberOfInclusions, sizeOfInclusions);
         } else {
             addSquareInclusions(numberOfInclusions, sizeOfInclusions);
         }
-        inclusionAdded = true;
+//        inclusionAdded = true;
     }
 
     private void addCircleInclusions(int numberOfInclusions, float sizeOfInclusions) {
