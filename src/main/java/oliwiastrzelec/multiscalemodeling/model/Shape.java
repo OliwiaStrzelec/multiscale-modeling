@@ -3,8 +3,8 @@ package oliwiastrzelec.multiscalemodeling.model;
 import lombok.Getter;
 
 public enum Shape {
-    SQUARE("Square"),
-    CIRCLE("Circle");
+    CIRCLE("Circle"),
+    SQUARE("Square");
 
     @Getter
     private final String shape;
