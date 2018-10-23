@@ -24,6 +24,23 @@
 
 <div class="row bg-dark bg-dark div-border">
     <div class="col-lg-4 mt-5">
+        <div th:if="${!probabilityAdded}" class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/addPropability}" method="post">
+
+                <div class="mb-3">
+                    <label for="probability">Probability of cell change [%]</label>
+                    <input th:name="probability" th:value="*{probability}" id="probability" type="number"
+                           class="form-control" placeholder="Probability" min="1" max="100" required="required">
+                </div>
+
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Set probability</button>
+                </center>
+            </form>
+        </div>
+        <div th:if="${probabilityAdded}" class="px-5 my-2 justify-content-sm-center div-border">
+            <label th:text="|Probability set to ${probability} %|"></label>
+        </div>
         <div th:if="${!grainsGenerated}" class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateGrains}" method="post">
 
@@ -38,7 +55,7 @@
                 </center>
             </form>
         </div>
-        <div th:if="${ !inclusionAdded && ((!grainsGenerated && !arrayFilled) || arrayFilled)}"
+        <div th:if="${((!grainsGenerated && !arrayFilled) || arrayFilled)}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateInclusions}" method="post">
 
@@ -144,10 +161,6 @@
     var sizeY = [[${sizeY}]];
     var array = [[${array}]];
     drawCells(sizeX, sizeY, array);
-
-
-
-
 </script>
 </body>
 </html>

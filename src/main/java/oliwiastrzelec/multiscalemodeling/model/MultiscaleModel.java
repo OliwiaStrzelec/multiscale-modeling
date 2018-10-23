@@ -1,8 +1,7 @@
 package oliwiastrzelec.multiscalemodeling.model;
 
 import lombok.Getter;
-import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.bidimap.TreeBidiMap;
+import lombok.Setter;
 
 import java.util.*;
 
@@ -20,8 +19,14 @@ public class MultiscaleModel {
     private boolean grainsGenerated = false;
     @Getter
     private boolean arrayFilled = false;
-//    @Getter
+    @Getter
+    @Setter
+    private boolean probabilityAdded = false;
+    //    @Getter
 //    private boolean inclusionAdded = false;
+    @Getter
+    @Setter
+    private int probability = 90;
 
     private MultiscaleModel() {
     }
@@ -101,7 +106,8 @@ public class MultiscaleModel {
 //                    mooreNeighbourhood(i, j, previousArray, currentArray);
 //                }
                 if ((c = previousArray[i][j]).getId() == 0) {
-                    fillMooreNeighbour(i, j, previousArray, currentArray);
+//                    fillMooreNeighbour(i, j, previousArray, currentArray);
+                    fillMooreNeighbourFirstRule(i, j, previousArray, currentArray);
                 } else {
                     currentArray[i][j].setId(c.getId());
                     currentArray[i][j].setRgb(c.getRgb());
@@ -137,22 +143,94 @@ public class MultiscaleModel {
         Cell c;
         for (int i = x - 1; i <= x + 1; i++) {
             for (int j = y - 1; j <= y + 1; j++) {
-                if (i < 0 || i >= sizeX || j < 0 || j >= sizeY) {
-                    continue;
-                }
-                if ((c = previousArray[i][j]).getId() != 0 && c.getId() != -1) {
-                    grainsCount.add(c);
-                }
+                addGrainToList(previousArray, grainsCount, i, j);
             }
         }
         if (grainsCount.isEmpty()) {
             return;
         }
 
-        c = MultiscaleModelHelper.mostCommon(grainsCount);
+        c = MultiscaleModelHelper.getMostCommonCell(grainsCount);
         currentArray[x][y].setId(c.getId());
         currentArray[x][y].setRgb(c.getRgb());
     }
+
+    private void fillMooreNeighbourFirstRule(int x, int y, Cell[][] previousArray, Cell[][] currentArray) {
+        List<Cell> grainsCount = new ArrayList<>();
+        Cell c;
+        for (int i = x - 1; i <= x + 1; i++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                addGrainToList(previousArray, grainsCount, i, j);
+            }
+        }
+        if (grainsCount.isEmpty()) {
+            fillMooreNeighbourSecondRule(x, y, previousArray, currentArray);
+            return;
+        }
+        c = MultiscaleModelHelper.fiveOrMoreOccurrences(grainsCount);
+        if (c == null) {
+            fillMooreNeighbourSecondRule(x, y, previousArray, currentArray);
+            return;
+        }
+        currentArray[x][y].setId(c.getId());
+        currentArray[x][y].setRgb(c.getRgb());
+    }
+
+    private void fillMooreNeighbourSecondRule(int x, int y, Cell[][] previousArray, Cell[][] currentArray) {
+        List<Cell> grainsCount = new ArrayList<>();
+        addGrainToList(previousArray, grainsCount, x - 1, y);
+        addGrainToList(previousArray, grainsCount, x + 1, y);
+        addGrainToList(previousArray, grainsCount, x, y - 1);
+        addGrainToList(previousArray, grainsCount, x, y + 1);
+        if (grainsCount.isEmpty()) {
+            fillMooreNeighbourThirdRule(x, y, previousArray, currentArray);
+            return;
+        }
+        Cell c = MultiscaleModelHelper.threeOrMoreOccurrences(grainsCount);
+        if (c == null) {
+            fillMooreNeighbourThirdRule(x, y, previousArray, currentArray);
+            return;
+        }
+        currentArray[x][y].setId(c.getId());
+        currentArray[x][y].setRgb(c.getRgb());
+    }
+
+    private void fillMooreNeighbourThirdRule(int x, int y, Cell[][] previousArray, Cell[][] currentArray) {
+        List<Cell> grainsCount = new ArrayList<>();
+        addGrainToList(previousArray, grainsCount, x - 1, y - 1);
+        addGrainToList(previousArray, grainsCount, x + 1, y + 1);
+        addGrainToList(previousArray, grainsCount, x - 1, y + 1);
+        addGrainToList(previousArray, grainsCount, x + 1, y - 1);
+        if (grainsCount.isEmpty()) {
+            fillMooreNeighbourFourthRule(x, y, previousArray, currentArray);
+            return;
+        }
+        Cell c = MultiscaleModelHelper.threeOrMoreOccurrences(grainsCount);
+        if (c == null) {
+            fillMooreNeighbourFourthRule(x, y, previousArray, currentArray);
+            return;
+        }
+        currentArray[x][y].setId(c.getId());
+        currentArray[x][y].setRgb(c.getRgb());
+    }
+
+    private void fillMooreNeighbourFourthRule(int x, int y, Cell[][] previousArray, Cell[][] currentArray) {
+        int r = new Random().nextInt(100);
+        if (r < probability) {
+            fillMooreNeighbour(x, y, previousArray, currentArray);
+        }
+    }
+
+    private void addGrainToList(Cell[][] previousArray, List<Cell> grainsCount, int i, int j) {
+        Cell c;
+        if (i < 0 || i >= sizeX || j < 0 || j >= sizeY) {
+            return;
+        }
+        if ((c = previousArray[i][j]).getId() != 0 && c.getId() != -1) {
+            grainsCount.add(c);
+        }
+    }
+
 
     private Cell generateRandomCell(int x, int y) {
         Cell cell = new Cell(Integer.valueOf(String.valueOf(x) + String.valueOf(y)));
@@ -174,6 +252,7 @@ public class MultiscaleModel {
         array = generateEmptyArray();
         grainsGenerated = false;
         arrayFilled = false;
+        probabilityAdded = false;
 //        inclusionAdded = false;
     }
 

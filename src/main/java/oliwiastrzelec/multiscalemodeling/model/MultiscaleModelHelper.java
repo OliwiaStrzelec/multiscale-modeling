@@ -3,10 +3,6 @@ package oliwiastrzelec.multiscalemodeling.model;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.TreeBidiMap;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class MultiscaleModelHelper {
@@ -63,8 +59,24 @@ public class MultiscaleModelHelper {
         return color;
     }
 
-    public static Cell mostCommon(List<Cell> grainsCount) {
+    public static Cell getMostCommonCell(List<Cell> grainsCount) {
         BidiMap<Cell, Integer> bidiMap = new TreeBidiMap<>(toFrequencyMap(grainsCount));
         return bidiMap.getKey(Collections.max(bidiMap.values()));
+    }
+
+    public static Cell fiveOrMoreOccurrences(List<Cell> grainsCount) {
+        return getCellByOccurrences(grainsCount, 5);
+    }
+    public static Cell threeOrMoreOccurrences(List<Cell> grainsCount) {
+        return getCellByOccurrences(grainsCount, 3);
+    }
+
+    private static Cell getCellByOccurrences(List<Cell> grainsCount, int occurrences) {
+        BidiMap<Cell, Integer> bidiMap = new TreeBidiMap<>(toFrequencyMap(grainsCount));
+        Integer key = Collections.max(bidiMap.values());
+        if (key >= occurrences) {
+            return bidiMap.getKey(key);
+        }
+        return null;
     }
 }

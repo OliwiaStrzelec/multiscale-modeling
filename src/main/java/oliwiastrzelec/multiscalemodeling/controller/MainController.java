@@ -47,6 +47,14 @@ public class MainController {
         return "index";
     }
 
+    @PostMapping("/addPropability")
+    public String addPropability(@RequestParam("probability") int probability, Model model) {
+        MultiscaleModel.getInstance().setProbability(probability);
+        MultiscaleModel.getInstance().setProbabilityAdded(true);
+        addAttributes(model);
+        return "index";
+    }
+
     @PostMapping("/generateInclusions")
     public String generateInclusions(@RequestParam("numberOfInclusions") int numberOfInclusions,
                                      @RequestParam("sizeOfInclusions") float sizeOfInclusions,
@@ -64,6 +72,8 @@ public class MainController {
         model.addAttribute("array", MultiscaleModel.getInstance().getArray());
         model.addAttribute("grainsGenerated", MultiscaleModel.getInstance().isGrainsGenerated());
         model.addAttribute("arrayFilled", MultiscaleModel.getInstance().isArrayFilled());
+        model.addAttribute("probabilityAdded", MultiscaleModel.getInstance().isProbabilityAdded());
+        model.addAttribute("probability", MultiscaleModel.getInstance().getProbability());
 //        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
     }
 
