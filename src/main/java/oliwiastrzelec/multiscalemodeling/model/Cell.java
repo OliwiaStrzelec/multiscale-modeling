@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.swing.plaf.nimbus.State;
 import java.util.Arrays;
-import java.util.Comparator;
 
 @Getter
 @Setter
@@ -20,27 +18,51 @@ public class Cell implements Comparable<Cell> {
     public Cell(int id) {
         this.id = id;
         this.state = State.GRAIN;
+        if(id == 0){
+            this.setRgb(new int[]{255, 255, 255});
+        }
     }
 
     public Cell(State state) {
         this.state = state;
-        if(state.equals(State.INCLUSION)){
+        if (state.equals(State.INCLUSION)) {
             this.rgb[0] = 0;
             this.rgb[1] = 0;
             this.rgb[2] = 0;
             this.setId(-1);
         }
-        if(state.equals(State.BORDER)){
+        if (state.equals(State.BORDER)) {
             this.rgb[0] = 30;
             this.rgb[1] = 30;
             this.rgb[2] = 30;
             this.setId(-2);
         }
+        if (state.equals(State.PHASE)) {
+            this.rgb[0] = 0;
+            this.rgb[1] = 150;
+            this.rgb[2] = 0;
+            this.setId(-3);
+        }
     }
+
+    public boolean isTheSameAs(Cell c) {
+        if (!(this.getId() == c.getId())) {
+            return false;
+        }
+        if (!(this.getState().equals(c.getState()))) {
+            return false;
+        }
+        if (!(this.rgb[0] == c.getRgb()[0] && this.rgb[1] == c.getRgb()[1] && this.rgb[2] == c.getRgb()[2])) {
+            return false;
+        }
+        return true;
+    }
+
 
     public enum State {
         INCLUSION("inclusion"),
         GRAIN("grain"),
+        PHASE("phase"),
         BORDER("border");
 
         @Getter

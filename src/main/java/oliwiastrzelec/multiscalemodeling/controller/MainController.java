@@ -61,8 +61,9 @@ public class MainController {
 
     @PostMapping("/chooseStructure")
     public String chooseStructure(@RequestParam("structure") Structure structure,
+                                  @RequestParam("numberOfGrainsToStay") int numberOfGrainsToStay,
                                   Model model) {
-        MultiscaleModel.getInstance().chooseStructure(structure);
+        MultiscaleModel.getInstance().chooseStructure(structure, numberOfGrainsToStay);
         addAttributes(model);
         return "index";
     }
@@ -76,7 +77,7 @@ public class MainController {
         model.addAttribute("arrayFilled", MultiscaleModel.getInstance().isArrayFilled());
         model.addAttribute("probabilityAdded", MultiscaleModel.getInstance().isProbabilityAdded());
         model.addAttribute("probability", MultiscaleModel.getInstance().getProbability());
-
+        model.addAttribute("structureChoosen", MultiscaleModel.getInstance().isStructureChoosen());
         if (MultiscaleModel.getInstance().isStructureChoosen() || MultiscaleModel.getInstance().isGrainsGenerated()) {
             model.addAttribute("structure", MultiscaleModel.getInstance().getStructure().getStructure());
         }
