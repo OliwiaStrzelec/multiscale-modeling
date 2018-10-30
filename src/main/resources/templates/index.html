@@ -24,6 +24,10 @@
 
 <div class="row bg-dark bg-dark div-border">
     <div class="col-lg-4 mt-5">
+        <!-- Probability -->
+        <div th:if="${probabilityAdded}" class="px-5 my-2 justify-content-sm-center div-border">
+            <label th:text="|Probability set to ${probability} %|"></label>
+        </div>
         <div th:if="${!probabilityAdded}" class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/addPropability}" method="post">
 
@@ -38,8 +42,33 @@
                 </center>
             </form>
         </div>
-        <div th:if="${probabilityAdded}" class="px-5 my-2 justify-content-sm-center div-border">
-            <label th:text="|Probability set to ${probability} %|"></label>
+
+        <!-- Structure -->
+        <div th:if="${structure != null}" class="px-5 my-2 justify-content-sm-center div-border">
+            <label th:text="|Structure set to ${structure}|"></label>
+        </div>
+        <div th:if="${!grainsGenerated && structure == null}"
+             class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/chooseStructure}" method="post">
+
+                <div class="mb-3">
+                    <label for="structure">Structure</label>
+                    <select class="custom-select" name="structure" id="structure">
+                        <option th:each="structure : ${T(oliwiastrzelec.multiscalemodeling.model.Structure).values()}"
+                                th:value="${structure}"
+                                th:text="${structure.structure}"></option>
+                    </select>
+                </div>
+
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Choose structure</button>
+                </center>
+            </form>
+        </div>
+
+        <!-- Number of grains -->
+        <div th:if="${grainsGenerated}" class="px-5 my-2 justify-content-sm-center div-border">
+            <label th:text="|Number of grains set to ${numberOfGrains}|"></label>
         </div>
         <div th:if="${!grainsGenerated}" class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateGrains}" method="post">
@@ -55,6 +84,8 @@
                 </center>
             </form>
         </div>
+
+        <!-- Inclusions -->
         <div th:if="${((!grainsGenerated && !arrayFilled) || arrayFilled)}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateInclusions}" method="post">
@@ -84,7 +115,9 @@
             </form>
         </div>
 
-        <div th:if="${grainsGenerated && !arrayFilled}" class="form-group px-5 my-2 justify-content-sm-center div-border">
+        <!-- Grains growth -->
+        <div th:if="${grainsGenerated && !arrayFilled}"
+             class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/growGrains}" method="post">
                 <div class="mb-3">
                     <label for="numberOfIterations">Number of iterations</label>
@@ -97,6 +130,8 @@
                 </center>
             </form>
         </div>
+
+        <!--Data export -->
         <div th:if="${arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center">
             <form th:action="@{/exportDatafile}" method="post">
                 <center>
@@ -113,6 +148,7 @@
         <!--</form>-->
         <!--</div>-->
 
+        <!-- Clear -->
         <div class="form-group px-5 mb-2 justify-content-sm-center">
             <form th:action="@{/clear}" method="post">
                 <center>
@@ -161,6 +197,8 @@
     var sizeY = [[${sizeY}]];
     var array = [[${array}]];
     drawCells(sizeX, sizeY, array);
+
+
 </script>
 </body>
 </html>

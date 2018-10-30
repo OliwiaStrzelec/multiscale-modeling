@@ -1,20 +1,13 @@
 package oliwiastrzelec.multiscalemodeling.controller;
 
 import oliwiastrzelec.multiscalemodeling.model.MultiscaleModel;
-import oliwiastrzelec.multiscalemodeling.model.MultiscaleModelHelper;
 import oliwiastrzelec.multiscalemodeling.model.Shape;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import oliwiastrzelec.multiscalemodeling.model.Structure;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class MainController {
@@ -66,6 +59,15 @@ public class MainController {
     }
 
 
+    @PostMapping("/chooseStructure")
+    public String chooseStructure(@RequestParam("structure") Structure structure,
+                                  Model model) {
+        MultiscaleModel.getInstance().chooseStructure(structure);
+        addAttributes(model);
+        return "index";
+    }
+
+
     private void addAttributes(Model model) {
         model.addAttribute("sizeX", MultiscaleModel.getInstance().getSizeX());
         model.addAttribute("sizeY", MultiscaleModel.getInstance().getSizeY());
@@ -74,6 +76,12 @@ public class MainController {
         model.addAttribute("arrayFilled", MultiscaleModel.getInstance().isArrayFilled());
         model.addAttribute("probabilityAdded", MultiscaleModel.getInstance().isProbabilityAdded());
         model.addAttribute("probability", MultiscaleModel.getInstance().getProbability());
+
+        if (MultiscaleModel.getInstance().isStructureChoosen() || MultiscaleModel.getInstance().isGrainsGenerated()) {
+            model.addAttribute("structure", MultiscaleModel.getInstance().getStructure().getStructure());
+        }
+
+        model.addAttribute("numberOfGrains", MultiscaleModel.getInstance().getNumberOfGrains());
 //        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
     }
 
