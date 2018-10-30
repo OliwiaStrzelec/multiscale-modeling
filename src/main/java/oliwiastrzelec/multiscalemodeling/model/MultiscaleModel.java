@@ -24,8 +24,8 @@ public class MultiscaleModel {
     private boolean arrayFilled = false;
 
     private boolean probabilityAdded = false;
-//    @Getter
-//    private boolean inclusionAdded = false;
+
+    //    private boolean inclusionAdded = false;
 
     private int probability = 90;
 
@@ -45,7 +45,7 @@ public class MultiscaleModel {
 
     public void generateRandomGrains(int numberOfNucleons) {
         setNumberOfGrains(numberOfNucleons);
-        if(!probabilityAdded){
+        if (!probabilityAdded) {
             setProbabilityAdded(true);
         }
         List<Cell> cells = generateRandomCells(numberOfNucleons);
@@ -57,7 +57,7 @@ public class MultiscaleModel {
         while (!cells.isEmpty()) {
             x = (int) (Math.floor(Math.random() * (sizeX - 2)) + 1);
             y = (int) (Math.floor(Math.random() * (sizeY - 2)) + 1);
-            if ((c = array[x][y]).getId() == 0 && !c.getState().equals(Cell.State.INCLUSION)) {
+            if ((c = array[x][y]).getId() == 0 && !c.getState().equals(Cell.State.INCLUSION) && !c.getState().equals(Cell.State.PHASE)) {
                 array[x][y] = cells.remove(i--);
             }
         }
@@ -230,12 +230,60 @@ public class MultiscaleModel {
         }
     }
 
+    public void chooseStructure(Structure structure, int numberOfGrainsToStay) {
+        this.structure = structure;
+        this.structureChoosen = true;
+        if (numberOfGrainsToStay >= numberOfGrains) {
+            return;
+        }
+        int x, y;
+        Cell c;
+        int numberOfGrainsToRemove = numberOfGrains - numberOfGrainsToStay - 1;
+        while (numberOfGrainsToRemove >= 0) {
+            x = (int) (Math.floor(Math.random() * (sizeX - 2)) + 1);
+            y = (int) (Math.floor(Math.random() * (sizeY - 2)) + 1);
+            if ((c = array[x][y]).getId() > 0) {
+                removeGrainFromArray(c);
+                numberOfGrainsToRemove--;
+            }
+        }
+        addStructureToGrains(structure);
+        setArrayFilled(false);
+        setGrainsGenerated(false);
+    }
+
+    private void removeGrainFromArray(Cell c) {
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                if (array[i][j].isTheSameAs(c)) {
+                    array[i][j] = new Cell(0);
+                }
+            }
+        }
+    }
+
+    private void addStructureToGrains(Structure structure) {
+        Cell c;
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                if ((c = array[i][j]).getId() > 0) {
+                    if (structure.equals(Structure.DUAL_PHASE)) {
+                        array[i][j] = new Cell(Cell.State.PHASE);
+                    } else {
+                        c.setId(-3);
+                        array[i][j] = c;
+                    }
+                }
+            }
+        }
+    }
+
     private void addGrainToList(Cell[][] previousArray, List<Cell> grainsCount, int i, int j) {
         Cell c;
         if (i < 0 || i >= sizeX || j < 0 || j >= sizeY) {
             return;
         }
-        if ((c = previousArray[i][j]).getId() != 0 && c.getId() != -1) {
+        if ((c = previousArray[i][j]).getId() != 0 && c.getId() != -1 && c.getId() != -2 && c.getId() != -3) {
             grainsCount.add(c);
         }
     }
@@ -435,12 +483,6 @@ public class MultiscaleModel {
             }
         }
         return borderCells;
-    }
-
-
-    public void chooseStructure(Structure structure) {
-        this.structure = structure;
-        this.structureChoosen = true;
     }
 
 }

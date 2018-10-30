@@ -44,10 +44,10 @@
         </div>
 
         <!-- Structure -->
-        <div th:if="${structure != null}" class="px-5 my-2 justify-content-sm-center div-border">
+        <div th:if="${structureChoosen}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Structure set to ${structure}|"></label>
         </div>
-        <div th:if="${!grainsGenerated && structure == null}"
+        <div th:if="${arrayFilled && !structureChoosen}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/chooseStructure}" method="post">
 
@@ -59,9 +59,14 @@
                                 th:text="${structure.structure}"></option>
                     </select>
                 </div>
-
+                <div class="mb-3">
+                    <label for="numberOfGrainsToStay">Number of grains to stay</label>
+                    <input th:name="numberOfGrainsToStay" th:value="*{numberOfGrainsToStay}" id="numberOfGrainsToStay"
+                           type="number"
+                           class="form-control" placeholder="Number of grains" min="1" max="20" required="required">
+                </div>
                 <center>
-                    <button type="submit" class="btn btn-lg btn-secondary">Choose structure</button>
+                    <button type="submit" class="btn btn-lg btn-secondary">Add structure</button>
                 </center>
             </form>
         </div>
