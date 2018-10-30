@@ -5,28 +5,33 @@ import lombok.Setter;
 
 import java.util.*;
 
+@Getter
+@Setter
 public class MultiscaleModel {
 
     public static MultiscaleModel instance;
 
-    @Getter
     private final int sizeX = 100;
-    @Getter
+
     private final int sizeY = 100;
-    @Getter
+
     private Cell[][] array = generateEmptyArray();
-    @Getter
+
     private boolean grainsGenerated = false;
-    @Getter
+
+    private int numberOfGrains = 0;
+
     private boolean arrayFilled = false;
-    @Getter
-    @Setter
+
     private boolean probabilityAdded = false;
-    //    @Getter
+//    @Getter
 //    private boolean inclusionAdded = false;
-    @Getter
-    @Setter
+
     private int probability = 90;
+
+    private Structure structure = Structure.SUBSTRUCTURE;
+
+    private boolean structureChoosen = false;
 
     private MultiscaleModel() {
     }
@@ -39,6 +44,10 @@ public class MultiscaleModel {
     }
 
     public void generateRandomGrains(int numberOfNucleons) {
+        setNumberOfGrains(numberOfNucleons);
+        if(!probabilityAdded){
+            setProbabilityAdded(true);
+        }
         List<Cell> cells = generateRandomCells(numberOfNucleons);
         int x;
         int y;
@@ -249,10 +258,12 @@ public class MultiscaleModel {
     }
 
     public void clear() {
-        array = generateEmptyArray();
-        grainsGenerated = false;
-        arrayFilled = false;
-        probabilityAdded = false;
+        setArray(generateEmptyArray());
+        setGrainsGenerated(false);
+        setArrayFilled(false);
+        setProbabilityAdded(false);
+        setStructure(Structure.SUBSTRUCTURE);
+        setStructureChoosen(false);
 //        inclusionAdded = false;
     }
 
@@ -352,8 +363,8 @@ public class MultiscaleModel {
     private void fillCircle(int r, int x, int y) {
         double pi = Math.PI;
         int a, b;
-        for (double i = 0; i < 360; i += 0.1) {
-            for (int j = r; j > 0; j--) {
+        for (double i = 0; i <= 360; i += 0.01) {
+            for (int j = r; j >= 0; j--) {
                 a = (int) (j * Math.cos(i * pi / 2)) + x;
                 b = (int) (j * Math.sin(i * pi / 2)) + y;
                 if (a < 0 || a >= sizeX || b < 0 || b > sizeY) {
@@ -426,5 +437,10 @@ public class MultiscaleModel {
         return borderCells;
     }
 
+
+    public void chooseStructure(Structure structure) {
+        this.structure = structure;
+        this.structureChoosen = true;
+    }
 
 }
