@@ -355,7 +355,7 @@ public class MultiscaleModel {
         for (int i = 0; i < numberOfInclusions; i++) {
             x = getX(r);
             y = getY(r);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION) || !isGrainsBorder(x, y, array[x][y].getId())) {
+            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !isGrainsBorder(x, y, array[x][y].getId())) {
                 x = getX(r);
                 y = getY(r);
             }
@@ -379,7 +379,7 @@ public class MultiscaleModel {
         for (int i = 0; i < numberOfInclusions; i++) {
             x = getX(a);
             y = getY(a);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION) || !isGrainsBorder(x, y, array[x][y].getId())) {
+            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !isGrainsBorder(x, y, array[x][y].getId())) {
                 x = getX(a);
                 y = getY(a);
             }
