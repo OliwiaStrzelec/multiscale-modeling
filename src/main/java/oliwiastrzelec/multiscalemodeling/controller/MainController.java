@@ -14,6 +14,7 @@ public class MainController {
 
     @GetMapping("/")
     public String getIndex(Model model) {
+        MultiscaleModel.getInstance().clear();
         addAttributes(model);
         return "index";
     }
@@ -59,6 +60,31 @@ public class MainController {
     }
 
 
+    @PostMapping("/addBoundaries")
+    public String addBoundaries(@RequestParam("boundarySize") int boundarySize,
+                                Model model) {
+        MultiscaleModel.getInstance().addBoundaries(boundarySize);
+        addAttributes(model);
+        return "index";
+    }
+
+
+    @PostMapping("/removeGrains")
+    public String removeGrains(Model model) {
+        MultiscaleModel.getInstance().removeGrains();
+        addAttributes(model);
+        return "index";
+    }
+
+
+    @PostMapping("/stopGrowing")
+    public String stopGrowing(Model model) {
+        MultiscaleModel.getInstance().stopGrowing();
+        addAttributes(model);
+        return "index";
+    }
+
+
     @PostMapping("/chooseStructure")
     public String chooseStructure(@RequestParam("structure") Structure structure,
                                   @RequestParam("numberOfGrainsToStay") int numberOfGrainsToStay,
@@ -81,7 +107,8 @@ public class MainController {
         if (MultiscaleModel.getInstance().isStructureChoosen() || MultiscaleModel.getInstance().isGrainsGenerated()) {
             model.addAttribute("structure", MultiscaleModel.getInstance().getStructure().getStructure());
         }
-
+        model.addAttribute("boundariesAdded", MultiscaleModel.getInstance().isBoundariesAdded());
+        model.addAttribute("growingAfterBoundaries", MultiscaleModel.getInstance().isGrowingAfterBoundaries());
         model.addAttribute("numberOfGrains", MultiscaleModel.getInstance().getNumberOfGrains());
 //        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
     }

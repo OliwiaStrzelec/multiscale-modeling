@@ -11,9 +11,9 @@ public class MultiscaleModel {
 
     public static MultiscaleModel instance;
 
-    private final int sizeX = 200;
+    private final int sizeX = 100;
 
-    private final int sizeY = 200;
+    private final int sizeY = 100;
 
     private Cell[][] array = generateEmptyArray();
 
@@ -26,6 +26,8 @@ public class MultiscaleModel {
     private boolean probabilityAdded = false;
 
     private boolean boundariesAdded = false;
+
+    private boolean growingAfterBoundaries = false;
 
     private boolean grainsRemoved = false;
 
@@ -81,19 +83,25 @@ public class MultiscaleModel {
     }
 
     public void growGrainsLoop(int numberOfIterations) {
-        if (numberOfIterations >= 50) {
+        if (numberOfIterations >= 50 && !growingAfterBoundaries) {
             while (countEmptyCells() != 0) {
                 growGrains();
             }
-            arrayFilled = true;
+            setArrayFilled(true);
             return;
         }
         for (int i = 0; i < numberOfIterations; i++) {
             growGrains();
         }
         if (countEmptyCells() == 0) {
-            arrayFilled = true;
+            setArrayFilled(true);
         }
+    }
+
+
+    public void stopGrowing() {
+        setArrayFilled(true);
+        setGrowingAfterBoundaries(false);
     }
 
     private int countEmptyCells() {
@@ -317,20 +325,16 @@ public class MultiscaleModel {
         setStructure(Structure.SUBSTRUCTURE);
         setStructureChoosen(false);
         setBoundariesAdded(false);
-        setGrainsRemoved(false);
+        setGrowingAfterBoundaries(false);
 //        inclusionAdded = false;
     }
 
     public void generateInclusions(int numberOfInclusions, float sizeOfInclusions, Shape shapeOfInclusions) {
-//        if (inclusionAdded) {
-//            return;
-//        }
         if (shapeOfInclusions.equals(Shape.CIRCLE)) {
             addCircleInclusions(numberOfInclusions, sizeOfInclusions);
         } else {
             addSquareInclusions(numberOfInclusions, sizeOfInclusions);
         }
-//        inclusionAdded = true;
     }
 
     private void addCircleInclusions(int numberOfInclusions, float sizeOfInclusions) {
@@ -463,6 +467,7 @@ public class MultiscaleModel {
         }
         Cell c = array[x][y];
         if(c.getState().equals(Cell.State.BORDER)){
+            array[x][y] = new Cell(Cell.State.INCLUSION);
             return;
         }
         c = new Cell(0);
@@ -470,7 +475,7 @@ public class MultiscaleModel {
         array[x][y] = c;
     }
 
-    private void fillIfGrainsBorder(int x, int y, int id, Cell[][] borderCells) {
+    private void fillIfGrainsBorder(int x, int y, int id, Cell[][] borderCells, int boundarySize) {
         if (!arrayFilled && !grainsGenerated) {
             return;
         }
@@ -480,6 +485,7 @@ public class MultiscaleModel {
             }
             if (array[i][y].getId() != id) {
                 borderCells[x][y] = new Cell(Cell.State.BORDER);
+                    fillBorderXDimension(x, y, borderCells, boundarySize);
             }
         }
         for (int i = y - 1; i <= y + 1; i++) {
@@ -488,18 +494,40 @@ public class MultiscaleModel {
             }
             if (array[x][i].getId() != id) {
                 borderCells[x][y] = new Cell(Cell.State.BORDER);
+                    fillBorderYDimension(x, y, borderCells, boundarySize);
             }
         }
     }
 
-    public void addBoundaries() {
-        array = addGrainsBorders();
+    private void fillBorderXDimension(int x, int y, Cell[][] cells, int boundarySize) {
+        for(int i = x - (boundarySize - 1); i <= x + (boundarySize - 1); i++){
+            if (i < 0 || i >= sizeX) {
+                continue;
+            }
+            cells[i][y] = new Cell(Cell.State.BORDER);
+        }
+    }
+
+    private void fillBorderYDimension(int x, int y, Cell[][] cells, int boundarySize) {
+        for(int i = y - (boundarySize - 1); i <= y + (boundarySize - 1); i++){
+            if (i < 0 || i >= sizeY) {
+                continue;
+            }
+            cells[x][i] = new Cell(Cell.State.BORDER);
+        }
+    }
+
+    public void addBoundaries(int boundarySize) {
+        array = addGrainsBorders(boundarySize);
         setBoundariesAdded(true);
     }
 
     public void removeGrains() {
         removeGrainsLeaveBorders();
-        setGrainsRemoved(true);
+        setGrainsGenerated(false);
+        setBoundariesAdded(false);
+        setGrowingAfterBoundaries(true);
+        setArrayFilled(false);
     }
 
     private void removeGrainsLeaveBorders(){
@@ -514,23 +542,23 @@ public class MultiscaleModel {
         Cell[][] borderCells = generateEmptyArray();
         for (int i = 0; i < sizeX; i++) {
             for (int j = 0; j < sizeY; j++) {
-                fillIfGrainsBorder(i, j, array[i][j].getId(), borderCells);
+                fillIfGrainsBorder(i, j, array[i][j].getId(), borderCells, 1);
             }
         }
         return borderCells;
     }
 
-    private Cell[][] addGrainsBorders() {
+    private Cell[][] addGrainsBorders(int boundarySize) {
         Cell[][] borderCells = cloneArray();
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                fillIfGrainsBorder(i, j, array[i][j].getId(), borderCells);
+            for (int i = 0; i < sizeX; i++) {
+                for (int j = 0; j < sizeY; j++) {
+                    fillIfGrainsBorder(i, j, array[i][j].getId(), borderCells, boundarySize);
+                }
             }
-        }
         return borderCells;
     }
 
-    private Cell[][] cloneArray(){
+    private Cell[][] cloneArray(Cell[][] array){
         Cell[][] clone = new Cell[sizeX][sizeY];
         for(int i = 0; i < sizeX; i++){
             for(int j = 0; j < sizeY; j++){
@@ -539,4 +567,9 @@ public class MultiscaleModel {
         }
         return clone;
     }
+
+    private Cell[][] cloneArray(){
+        return cloneArray(array);
+    }
+
 }

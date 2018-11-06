@@ -47,7 +47,7 @@
         <div th:if="${structureChoosen}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Structure set to ${structure}|"></label>
         </div>
-        <div th:if="${arrayFilled && !structureChoosen}"
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/chooseStructure}" method="post">
 
@@ -90,8 +90,30 @@
             </form>
         </div>
 
+        <!--Boundaries -->
+        <div th:if="${arrayFilled && !boundariesAdded}" class="form-group px-5 mb-2 justify-content-sm-center div-border">
+            <form th:action="@{/addBoundaries}" method="post">
+                <div class="mb-3">
+                    <label for="probability">Boundary size</label>
+                    <input th:name="boundarySize" th:value="*{boundarySize}" id="boundarySize" type="number"
+                           class="form-control" placeholder="Boundary size" min="1" max="10" required="required">
+                </div>
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Add boundaries</button>
+                </center>
+            </form>
+        </div>
+
+        <div th:if="${boundariesAdded}" class="form-group px-5 mb-2 justify-content-sm-center div-border pt-2">
+            <form th:action="@{/removeGrains}" method="post">
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Remove grains</button>
+                </center>
+            </form>
+        </div>
+
         <!-- Inclusions -->
-        <div th:if="${((!grainsGenerated && !arrayFilled) || arrayFilled)}"
+        <div th:if="${(((!grainsGenerated && !arrayFilled) || arrayFilled) && !boundariesAdded)}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateInclusions}" method="post">
 
@@ -136,8 +158,16 @@
             </form>
         </div>
 
+        <div th:if="${growingAfterBoundaries && grainsGenerated}" class="form-group px-5 mb-2 justify-content-sm-center div-border pt-2">
+            <form th:action="@{/stopGrowing}" method="post">
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Stop growing</button>
+                </center>
+            </form>
+        </div>
+
         <!--Data export -->
-        <div th:if="${arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center">
+        <div th:if="${arrayFilled}" class="form-group px-5 mb-2 justify-content-sm-center div-border pt-2">
             <form th:action="@{/exportDatafile}" method="post">
                 <center>
                     <button type="submit" class="btn btn-lg btn-secondary">Export datafile</button>
@@ -154,7 +184,7 @@
         <!--</div>-->
 
         <!-- Clear -->
-        <div class="form-group px-5 mb-2 justify-content-sm-center">
+        <div class="form-group px-5 mb-2 justify-content-sm-center div-border pt-2">
             <form th:action="@{/clear}" method="post">
                 <center>
                     <button type="submit" class="btn btn-lg btn-secondary">Clear</button>
