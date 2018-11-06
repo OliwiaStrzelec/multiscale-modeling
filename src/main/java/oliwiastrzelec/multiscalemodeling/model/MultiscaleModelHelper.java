@@ -24,18 +24,6 @@ public class MultiscaleModelHelper {
         list.forEach(cells -> System.out.println(Arrays.asList(cells)));
     }
 
-    public static Map<Cell, Integer> toFrequencyMap(List<Cell> cells) {
-        Map<Cell, Integer> cellIntegerMap = new HashMap<Cell, Integer>();
-        cells.forEach(cell -> {
-            if (!cellIntegerMap.containsKey(cell)) {
-                cellIntegerMap.put(cell, 1);
-            } else {
-                cellIntegerMap.put(cell, cellIntegerMap.get(cell) + 1);
-            }
-        });
-        return cellIntegerMap;
-    }
-
     public static int[] generateRandomColor() {
         int[] color = new int[3];
         color[0] = (int) (Math.floor(Math.random() * 220) + 36);
@@ -44,24 +32,21 @@ public class MultiscaleModelHelper {
         return color;
     }
 
-    public static Cell getMostCommonCell(List<Cell> grainsCount) {
-        BidiMap<Cell, Integer> bidiMap = new TreeBidiMap<>(toFrequencyMap(grainsCount));
-        return bidiMap.getKey(Collections.max(bidiMap.values()));
+    private static Cell generateRandomCell(int x, int y) {
+        Cell cell = new Cell(Integer.valueOf(String.valueOf(x) + String.valueOf(y)));
+        cell.setRgb(generateRandomColor());
+        return cell;
     }
 
-    public static Cell fiveOrMoreOccurrences(List<Cell> grainsCount) {
-        return getCellByOccurrences(grainsCount, 5);
-    }
-    public static Cell threeOrMoreOccurrences(List<Cell> grainsCount) {
-        return getCellByOccurrences(grainsCount, 3);
-    }
-
-    private static Cell getCellByOccurrences(List<Cell> grainsCount, int occurrences) {
-        BidiMap<Cell, Integer> bidiMap = new TreeBidiMap<>(toFrequencyMap(grainsCount));
-        Integer key = Collections.max(bidiMap.values());
-        if (key >= occurrences) {
-            return bidiMap.getKey(key);
+    public static int countEmptyCells(Cell[][] array) {
+        int count = 0;
+        for (Cell[] cells : array) {
+            for (Cell cell : cells) {
+                if (cell.getId() == 0) {
+                    count++;
+                }
+            }
         }
-        return null;
+        return count;
     }
 }
