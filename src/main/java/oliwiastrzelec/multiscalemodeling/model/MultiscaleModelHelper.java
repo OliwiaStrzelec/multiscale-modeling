@@ -19,21 +19,6 @@ public class MultiscaleModelHelper {
         return sb.toString();
     }
 
-//    public static File getBitmap(Cell[][] array, int sizeX, int sizeY) throws IOException {
-//        BufferedImage image = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_4BYTE_ABGR);
-//        Cell cell;
-//        for (int i = 0; i < sizeX; i++) {
-//            for (int j = 0; j < sizeY; j++) {
-//                cell = array[i][j];
-////                image.setRGB(i, j, ((cell.getRgb()[0]&0x0ff)<<16)|((cell.getRgb()[1]&0x0ff)<<8)|(cell.getRgb()[2]&0x0ff));
-//                image.setRGB(i, j, (cell.getRgb()[0] << 16 | cell.getRgb()[1] << 8 | cell.getRgb()[2]));
-//            }
-//        }
-//        File file = new File("bitmap.png");
-//        ImageIO.write(image, "png", file);
-//        return file;
-//    }
-
     public static void printArray(Cell[][] array) {
         List<Cell[]> list = new ArrayList(Arrays.asList(array));
         list.forEach(cells -> System.out.println(Arrays.asList(cells)));
