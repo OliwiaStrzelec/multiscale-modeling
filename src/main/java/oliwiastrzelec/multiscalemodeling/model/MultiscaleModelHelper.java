@@ -49,4 +49,26 @@ public class MultiscaleModelHelper {
         }
         return count;
     }
+
+    static List<Cell> generateRandomCells(int numberOfNucleons) {
+        List<Cell> cells = new ArrayList<>();
+        for (int i = 1; i <= numberOfNucleons; i++) {
+            Cell c = new Cell(i);
+            c.setRgb(generateRandomColor());
+            cells.add(c);
+        }
+        return cells;
+    }
+
+    static Cell[][] generateEmptyArray(int sizeX, int sizeY) {
+        Cell[][] cells = new Cell[sizeX][sizeY];
+        for (int i = 0; i < sizeY; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                Cell c = new Cell(0);
+                c.setRgb(new int[]{255, 255, 255});
+                cells[i][j] = c;
+            }
+        }
+        return cells;
+    }
 }
