@@ -198,134 +198,29 @@ public class MultiscaleModel {
 
     public void generateInclusions(int numberOfInclusions, float sizeOfInclusions, Shape shapeOfInclusions) {
         if (shapeOfInclusions.equals(Shape.CIRCLE)) {
-            addCircleInclusions(numberOfInclusions, sizeOfInclusions);
+            addCircleInclusions(numberOfInclusions, sizeOfInclusions, array);
         } else {
             addSquareInclusions(numberOfInclusions, sizeOfInclusions);
         }
     }
 
-    private void addCircleInclusions(int numberOfInclusions, float sizeOfInclusions) {
+    private void addCircleInclusions(int numberOfInclusions, float sizeOfInclusions, Cell[][] array) {
         if (arrayFilled) {
-            addCircleInclusionsForFilledArray(numberOfInclusions, (int) sizeOfInclusions, addGrainsBordersToEmptyArray());
+            Inclusions.addCircleInclusionsForFilledArray(numberOfInclusions, (int) sizeOfInclusions, array);
         }
         if (!grainsGenerated && !arrayFilled) {
-            addCircleInclusionsForEmptyArray(numberOfInclusions, (int) sizeOfInclusions);
-        }
-    }
-
-    private void addCircleInclusionsForEmptyArray(int numberOfInclusions, int r) {
-        int x, y;
-        for (int i = 0; i < numberOfInclusions; i++) {
-            x = getX(r);
-            y = getY(r);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION)) {
-                x = getX(r);
-                y = getY(r);
-            }
-            fillCircle(r, x, y);
-        }
-    }
-
-    private void addCircleInclusionsForFilledArray(int numberOfInclusions, int r, Cell[][] cells) {
-        int x;
-        int y;
-        for (int i = 0; i < numberOfInclusions; i++) {
-            x = getX(r);
-            y = getY(r);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !isGrainsBorder(x, y, array[x][y].getId())) {
-                x = getX(r);
-                y = getY(r);
-            }
-            fillCircle(r, x, y);
+            Inclusions.addCircleInclusionsForEmptyArray(numberOfInclusions, (int) sizeOfInclusions, array);
         }
     }
 
     private void addSquareInclusions(int numberOfInclusions, float sizeOfInclusions) {
         int a = (int) (sizeOfInclusions / Math.sqrt(2));
         if (arrayFilled) {
-            addSquareInclusionsForFilledArray(numberOfInclusions, a, addGrainsBordersToEmptyArray());
+            Inclusions.addSquareInclusionsForFilledArray(numberOfInclusions, a, array);
         }
         if (!grainsGenerated && !arrayFilled) {
-            addSquareInclusionsForEmptyArray(numberOfInclusions, a);
+            Inclusions.addSquareInclusionsForEmptyArray(numberOfInclusions, a, array);
         }
-    }
-
-    private void addSquareInclusionsForFilledArray(int numberOfInclusions, int a, Cell[][] borders) {
-        int x;
-        int y;
-        for (int i = 0; i < numberOfInclusions; i++) {
-            x = getX(a);
-            y = getY(a);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !isGrainsBorder(x, y, array[x][y].getId())) {
-                x = getX(a);
-                y = getY(a);
-            }
-            fillSquare(a, x, y);
-        }
-    }
-
-    private void addSquareInclusionsForEmptyArray(int numberOfInclusions, int a) {
-        int x, y;
-        for (int i = 0; i < numberOfInclusions; i++) {
-            x = getX(a);
-            y = getY(a);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION)) {
-                x = getX(a);
-                y = getY(a);
-            }
-            fillSquare((int) a, x, y);
-        }
-    }
-
-    private void fillSquare(int a, int x, int y) {
-        for (int i = x; i <= x + a && i < sizeX; i++) {
-            for (int j = y; j <= y + a && j < sizeY; j++) {
-                array[i][j] = new Cell(Cell.State.INCLUSION);
-            }
-        }
-    }
-
-    private void fillCircle(int r, int x, int y) {
-        double pi = Math.PI;
-        int a, b;
-        for (double i = 0; i <= 360; i += 0.01) {
-            for (int j = r; j >= 0; j--) {
-                a = (int) (j * Math.cos(i * pi / 2)) + x;
-                b = (int) (j * Math.sin(i * pi / 2)) + y;
-                if (a < 0 || a >= sizeX || b < 0 || b > sizeY) {
-                    continue;
-                }
-                array[a][b] = new Cell(Cell.State.INCLUSION);
-            }
-        }
-    }
-
-    private int getY(int a) {
-        return (int) (Math.floor(Math.random() * (sizeY - 2 - a)) + 1);
-    }
-
-    private int getX(int a) {
-        return (int) (Math.floor(Math.random() * (sizeX - 2 - a)) + 1);
-    }
-
-    private boolean isGrainsBorder(int x, int y, int id) {
-        for (int i = x; i <= x + 2; i++) {
-            if (i < 0 || i >= sizeX) {
-                continue;
-            }
-            if (array[i][y].getId() != id) {
-                return true;
-            }
-        }
-        for (int i = y; i <= y + 2; i++) {
-            if (i < 0 || i >= sizeY) {
-                continue;
-            }
-            if (array[x][i].getId() != id) {
-                return false;
-            }
-        }
-        return false;
     }
 
     private void removeIfNotGrainsBorder(int x, int y){
