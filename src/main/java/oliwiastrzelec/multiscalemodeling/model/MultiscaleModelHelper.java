@@ -1,9 +1,17 @@
 package oliwiastrzelec.multiscalemodeling.model;
 
-import org.apache.commons.collections4.BidiMap;
-import org.apache.commons.collections4.bidimap.TreeBidiMap;
-
-import java.util.*;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MultiscaleModelHelper {
     public static String getDataFile(Cell[][] array, int sizeX, int sizeY) {
@@ -17,6 +25,31 @@ public class MultiscaleModelHelper {
             }
         }
         return sb.toString();
+    }
+
+    public static void saveBitmap(final BufferedImage bufferedImage, final String path) {
+        try {
+            RenderedImage rendImage = bufferedImage;
+            ImageIO.write(rendImage, "bmp", new File(path));
+            //ImageIO.write(rendImage, "PNG", new File(path));
+            //ImageIO.write(rendImage, "jpeg", new File(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static BufferedImage getBitmap(Cell[][] array) {
+        final BufferedImage bufferedImage = new BufferedImage(array.length, array[0].length, BufferedImage.TYPE_INT_RGB);
+        Color color;
+        for (int x = 0; x < array.length; x++) {
+            for (int y = 0; y < array[0].length; y++) {
+                color = new Color(array[x][y].getRgb()[0], array[x][y].getRgb()[1], array[x][y].getRgb()[2]);
+                bufferedImage.setRGB(x, y, color.getRGB());
+            }
+        }
+        File file = new File("src/main/resources/static/bitmap.bmp");
+        saveBitmap(bufferedImage, file.getAbsolutePath());
+        return bufferedImage;
     }
 
     public static void printArray(Cell[][] array) {
@@ -48,5 +81,27 @@ public class MultiscaleModelHelper {
             }
         }
         return count;
+    }
+
+    static List<Cell> generateRandomCells(int numberOfNucleons) {
+        List<Cell> cells = new ArrayList<>();
+        for (int i = 1; i <= numberOfNucleons; i++) {
+            Cell c = new Cell(i);
+            c.setRgb(generateRandomColor());
+            cells.add(c);
+        }
+        return cells;
+    }
+
+    static Cell[][] generateEmptyArray(int sizeX, int sizeY) {
+        Cell[][] cells = new Cell[sizeX][sizeY];
+        for (int i = 0; i < sizeY; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                Cell c = new Cell(0);
+                c.setRgb(new int[]{255, 255, 255});
+                cells[i][j] = c;
+            }
+        }
+        return cells;
     }
 }
