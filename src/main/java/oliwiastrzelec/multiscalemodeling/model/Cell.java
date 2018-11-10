@@ -43,6 +43,12 @@ public class Cell implements Comparable<Cell> {
             this.rgb[2] = 0;
             this.setId(-3);
         }
+        if (state.equals(State.INSIDE_BORDER)) {
+            this.rgb[0] = 255;
+            this.rgb[1] = 255;
+            this.rgb[2] = 255;
+            this.setId(-4);
+        }
     }
 
     public boolean isTheSameAs(Cell c) {
@@ -63,7 +69,8 @@ public class Cell implements Comparable<Cell> {
         INCLUSION("inclusion"),
         GRAIN("grain"),
         PHASE("phase"),
-        BORDER("border");
+        BORDER("border"),
+        INSIDE_BORDER("inside_border");
 
         @Getter
         private String state;

@@ -47,7 +47,7 @@ public class MooreNeighbourhood {
         if (i < 0 || i >= previousArray.length || j < 0 || j >= previousArray[0].length) {
             return;
         }
-        if ((c = previousArray[i][j]).getId() != 0 && c.getId() != -1 && c.getId() != -2 && c.getId() != -3) {
+        if ((c = previousArray[i][j]).getId() != 0 && c.getId() != -1 && c.getId() != -2 && c.getId() != -3 && c.getId() != -4) {
             grainsCount.add(c);
         }
     }

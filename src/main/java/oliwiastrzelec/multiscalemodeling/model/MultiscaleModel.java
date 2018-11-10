@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import java.util.*;
 
+import static oliwiastrzelec.multiscalemodeling.model.MultiscaleModelHelper.cloneArray;
+import static oliwiastrzelec.multiscalemodeling.model.MultiscaleModelHelper.isGrainsBorder;
+
 @Getter
 @Setter
 public class MultiscaleModel {
@@ -61,11 +64,11 @@ public class MultiscaleModel {
         while (!cells.isEmpty()) {
             x = (int) (Math.floor(Math.random() * (sizeX - 2)) + 1);
             y = (int) (Math.floor(Math.random() * (sizeY - 2)) + 1);
-            if ((c = array[x][y]).getId() == 0 && !c.getState().equals(Cell.State.INCLUSION) && !c.getState().equals(Cell.State.PHASE)) {
+            if ((c = array[x][y]).getId() == 0 && !c.getState().equals(Cell.State.INCLUSION) && !c.getState().equals(Cell.State.PHASE) && !c.getState().equals(Cell.State.INSIDE_BORDER)) {
                 array[x][y] = cells.remove(i--);
             }
         }
-        this.grainsGenerated = true;
+        setGrainsGenerated(true);
     }
 
     public void growGrainsLoop(int numberOfIterations) {
@@ -173,6 +176,10 @@ public class MultiscaleModel {
             return;
         }
         Cell c = array[x][y];
+        if (c.getState().equals(Cell.State.INSIDE_BORDER)) {
+            array[x][y] = new Cell(Cell.State.INSIDE_BORDER);
+            return;
+        }
         if (c.getState().equals(Cell.State.BORDER)) {
             array[x][y] = new Cell(Cell.State.INCLUSION);
             return;
@@ -224,9 +231,62 @@ public class MultiscaleModel {
         }
     }
 
-    public void addBoundaries(int boundarySize) {
-        array = addGrainsBorders(boundarySize);
+    public void addBoundaries(int boundarySize, int numberOfGrains) {
+        if (!arrayFilled && !grainsGenerated) {
+            return;
+        }
+        if (numberOfGrains == 0) {
+            array = addGrainsBorders(boundarySize);
+        } else {
+            array = addBordersToGrains(boundarySize, numberOfGrains, array);
+        }
         setBoundariesAdded(true);
+    }
+
+    public Cell[][] addBordersToGrains(int boundarySize, int numberOfGrains, Cell[][] array) {
+        Cell[][] cellBorders = MultiscaleModelHelper.cloneArray(array);
+        int x, y;
+        Cell c;
+        while (numberOfGrains > 0) {
+            x = (int) (Math.floor(Math.random() * (array.length - 2)) + 1);
+            y = (int) (Math.floor(Math.random() * (array[0].length - 2)) + 1);
+            if ((c = array[x][y]).getId() > 0) {
+                addBorderToGrain(c, cellBorders, boundarySize);
+                numberOfGrains--;
+            }
+        }
+        return cellBorders;
+    }
+
+    private void addBorderToGrain(Cell c, Cell[][] cellBorders, int boundarySize) {
+        List<CellWithCoordinates> cells = allCells(c.getId(), cellBorders);
+        cells.forEach(cell -> {
+            fillIfGrainsBorder(cell.getX(), cell.getY(), c.getId(), cellBorders, boundarySize);
+        });
+        cells.forEach(cell -> {
+            changeStateIfNotGrainsBorder(cell.getX(), cell.getY(), cellBorders);
+        });
+    }
+
+    private void changeStateIfNotGrainsBorder(int x, int y, Cell[][] cellBorders) {
+        Cell c;
+        if (!((c = cellBorders[x][y]).getState().equals(Cell.State.BORDER))) {
+            c.setState(Cell.State.INSIDE_BORDER);
+            cellBorders[x][y] = c;
+        }
+    }
+
+    private List<CellWithCoordinates> allCells(int id, Cell[][] cellBorders) {
+        List<CellWithCoordinates> cells = new ArrayList<>();
+        Cell c;
+        for (int i = 0; i < cellBorders.length; i++) {
+            for (int j = 0; j < cellBorders[0].length; j++) {
+                if ((c = cellBorders[i][j]).getId() == id) {
+                    cells.add(new CellWithCoordinates(c, i, j));
+                }
+            }
+        }
+        return cells;
     }
 
     public void removeGrains() {
@@ -265,18 +325,8 @@ public class MultiscaleModel {
         return borderCells;
     }
 
-    private Cell[][] cloneArray(Cell[][] array) {
-        Cell[][] clone = new Cell[sizeX][sizeY];
-        for (int i = 0; i < sizeX; i++) {
-            for (int j = 0; j < sizeY; j++) {
-                clone[i][j] = array[i][j];
-            }
-        }
-        return clone;
-    }
-
     private Cell[][] cloneArray() {
-        return cloneArray(array);
+        return MultiscaleModelHelper.cloneArray(array);
     }
 
 }
