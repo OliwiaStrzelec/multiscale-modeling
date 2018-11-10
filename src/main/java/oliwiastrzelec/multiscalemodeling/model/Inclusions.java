@@ -20,7 +20,7 @@ public class Inclusions {
         for (int i = 0; i < numberOfInclusions; i++) {
             x = getX(r, array.length);
             y = getY(r, array[0].length);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !isGrainsBorder(x, y, array[x][y].getId(), array)) {
+            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !MultiscaleModelHelper.isGrainsBorder(x, y, array[x][y].getId(), array)) {
                 x = getX(r, array.length);
                 y = getY(r, array[0].length);
             }
@@ -34,7 +34,7 @@ public class Inclusions {
         for (int i = 0; i < numberOfInclusions; i++) {
             x = getX(a, array.length);
             y = getY(a, array[0].length);
-            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !isGrainsBorder(x, y, array[x][y].getId(), array)) {
+            while (array[x][y].getState().equals(Cell.State.INCLUSION) || array[x][y].getState().equals(Cell.State.PHASE) || !MultiscaleModelHelper.isGrainsBorder(x, y, array[x][y].getId(), array)) {
                 x = getX(a, array.length);
                 y = getY(a, array[0].length);
             }
@@ -86,23 +86,4 @@ public class Inclusions {
         return (int) (Math.floor(Math.random() * (sizeX - 2 - a)) + 1);
     }
 
-    private static boolean isGrainsBorder(int x, int y, int id, Cell[][] array) {
-        for (int i = x; i <= x + 2; i++) {
-            if (i < 0 || i >= array.length) {
-                continue;
-            }
-            if (array[i][y].getId() != id) {
-                return true;
-            }
-        }
-        for (int i = y; i <= y + 2; i++) {
-            if (i < 0 || i >= array[0].length) {
-                continue;
-            }
-            if (array[x][i].getId() != id) {
-                return false;
-            }
-        }
-        return false;
-    }
 }

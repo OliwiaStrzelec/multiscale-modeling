@@ -104,4 +104,34 @@ public class MultiscaleModelHelper {
         }
         return cells;
     }
+
+    protected static Cell[][] cloneArray(Cell[][] array) {
+        Cell[][] clone = new Cell[array.length][array[0].length];
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[0].length; j++) {
+                clone[i][j] = array[i][j];
+            }
+        }
+        return clone;
+    }
+
+    static boolean isGrainsBorder(int x, int y, int id, Cell[][] array) {
+        for (int i = x; i <= x + 2; i++) {
+            if (i < 0 || i >= array.length) {
+                continue;
+            }
+            if (array[i][y].getId() != id) {
+                return true;
+            }
+        }
+        for (int i = y; i <= y + 2; i++) {
+            if (i < 0 || i >= array[0].length) {
+                continue;
+            }
+            if (array[x][i].getId() != id) {
+                return false;
+            }
+        }
+        return false;
+    }
 }

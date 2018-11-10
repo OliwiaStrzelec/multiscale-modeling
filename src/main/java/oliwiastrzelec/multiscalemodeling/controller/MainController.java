@@ -62,8 +62,15 @@ public class MainController {
 
     @PostMapping("/addBoundaries")
     public String addBoundaries(@RequestParam("boundarySize") int boundarySize,
+                                @RequestParam("numberOfGrainsToMark") String numberOfGrainsToMark,
                                 Model model) {
-        MultiscaleModel.getInstance().addBoundaries(boundarySize);
+        int numberOfGrains;
+        if (numberOfGrainsToMark == null || numberOfGrainsToMark.isEmpty()) {
+            numberOfGrains = 0;
+        } else {
+            numberOfGrains = Integer.valueOf(numberOfGrainsToMark);
+        }
+        MultiscaleModel.getInstance().addBoundaries(boundarySize, numberOfGrains);
         addAttributes(model);
         return "index";
     }
