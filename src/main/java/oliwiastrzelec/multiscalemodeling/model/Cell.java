@@ -15,6 +15,21 @@ public class Cell implements Comparable<Cell> {
     private int[] rgb = new int[3];
     private State state;
 
+    public enum State {
+        INCLUSION("inclusion"),
+        GRAIN("grain"),
+        PHASE("phase"),
+        BORDER("border"),
+        INSIDE_BORDER("inside_border");
+
+        @Getter
+        private String state;
+
+        State(String state) {
+            this.state = state;
+        }
+    }
+
     public Cell(int id) {
         this.id = id;
         this.state = State.GRAIN;
@@ -62,22 +77,6 @@ public class Cell implements Comparable<Cell> {
             return false;
         }
         return true;
-    }
-
-
-    public enum State {
-        INCLUSION("inclusion"),
-        GRAIN("grain"),
-        PHASE("phase"),
-        BORDER("border"),
-        INSIDE_BORDER("inside_border");
-
-        @Getter
-        private String state;
-
-        State(String state) {
-            this.state = state;
-        }
     }
 
     @Override

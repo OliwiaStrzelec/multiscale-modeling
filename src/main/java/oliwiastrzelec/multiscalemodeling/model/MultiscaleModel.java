@@ -14,9 +14,9 @@ public class MultiscaleModel {
 
     public static MultiscaleModel instance;
 
-    private final int sizeX = 100;
+    private final int sizeX = 200;
 
-    private final int sizeY = 100;
+    private final int sizeY = 200;
 
     private Cell[][] array = MultiscaleModelHelper.generateEmptyArray(sizeX, sizeY);
 
@@ -72,9 +72,11 @@ public class MultiscaleModel {
     }
 
     public void growGrainsLoop(int numberOfIterations) {
+        int k = 0;
         if (numberOfIterations >= 50 && !growingAfterBoundaries) {
-            while (MultiscaleModelHelper.countEmptyCells(array) != 0) {
+            while (MultiscaleModelHelper.countEmptyCells(array) != 0 && k < 100) {
                 growGrains();
+                k++;
             }
             setArrayFilled(true);
             return;
@@ -89,7 +91,7 @@ public class MultiscaleModel {
 
     public void stopGrowing() {
         setArrayFilled(true);
-        setGrowingAfterBoundaries(false);
+        //setGrowingAfterBoundaries(false);
     }
 
     public void growGrains() {
