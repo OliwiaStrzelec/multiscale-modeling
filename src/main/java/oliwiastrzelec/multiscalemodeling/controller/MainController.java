@@ -1,5 +1,6 @@
 package oliwiastrzelec.multiscalemodeling.controller;
 
+import oliwiastrzelec.multiscalemodeling.model.Mechanism;
 import oliwiastrzelec.multiscalemodeling.model.MultiscaleModel;
 import oliwiastrzelec.multiscalemodeling.model.Shape;
 import oliwiastrzelec.multiscalemodeling.model.Structure;
@@ -21,8 +22,9 @@ public class MainController {
 
     @PostMapping("/generateGrains")
     public String generateGrains(@RequestParam("numberOfNucleons") int numberOfNucleons,
+                                 @RequestParam("mechanism") Mechanism mechanism,
                                  Model model) {
-        MultiscaleModel.getInstance().generateRandomGrains(numberOfNucleons);
+        MultiscaleModel.getInstance().generateRandomGrains(mechanism, numberOfNucleons);
         addAttributes(model);
         return "index";
     }
@@ -45,6 +47,14 @@ public class MainController {
     public String addPropability(@RequestParam("probability") int probability, Model model) {
         MultiscaleModel.getInstance().setProbability(probability);
         MultiscaleModel.getInstance().setProbabilityAdded(true);
+        addAttributes(model);
+        return "index";
+    }
+
+    @PostMapping("/addBoundaryEnergy")
+    public String addPropability(@RequestParam("boundaryEnergy") double boundaryEnergy, Model model) {
+        MultiscaleModel.getInstance().setBoundaryEnergy(boundaryEnergy);
+        MultiscaleModel.getInstance().setBoundaryEnergyAdded(true);
         addAttributes(model);
         return "index";
     }
@@ -117,6 +127,9 @@ public class MainController {
         model.addAttribute("boundariesAdded", MultiscaleModel.getInstance().isBoundariesAdded());
         model.addAttribute("growingAfterBoundaries", MultiscaleModel.getInstance().isGrowingAfterBoundaries());
         model.addAttribute("numberOfGrains", MultiscaleModel.getInstance().getNumberOfGrains());
+        model.addAttribute("monteCarlo", MultiscaleModel.getInstance().isMonteCarlo());
+        model.addAttribute("boundaryEnergyAdded", MultiscaleModel.getInstance().isBoundaryEnergyAdded());
+        model.addAttribute("boundaryEnergy", MultiscaleModel.getInstance().getBoundaryEnergy());
 //        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
     }
 

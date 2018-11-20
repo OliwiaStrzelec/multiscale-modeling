@@ -5,9 +5,6 @@ import lombok.Setter;
 
 import java.util.*;
 
-import static oliwiastrzelec.multiscalemodeling.model.MultiscaleModelHelper.cloneArray;
-import static oliwiastrzelec.multiscalemodeling.model.MultiscaleModelHelper.isGrainsBorder;
-
 @Getter
 @Setter
 public class MultiscaleModel {
@@ -28,17 +25,25 @@ public class MultiscaleModel {
 
     private boolean probabilityAdded = false;
 
+    private boolean boundaryEnergyAdded = false;
+
     private boolean boundariesAdded = false;
 
     private boolean growingAfterBoundaries = false;
 
     private boolean grainsRemoved = false;
 
+    private boolean isMonteCarlo = false;
+
     private int probability = 90;
+
+    private double boundaryEnergy = 0.5;
 
     private Structure structure = Structure.SUBSTRUCTURE;
 
     private boolean structureChoosen = false;
+
+    private static Random random = new Random();
 
     private MultiscaleModel() {
     }
@@ -50,8 +55,13 @@ public class MultiscaleModel {
         return instance;
     }
 
-    public void generateRandomGrains(int numberOfNucleons) {
+    public void generateRandomGrains(Mechanism mechanism, int numberOfNucleons) {
         setNumberOfGrains(numberOfNucleons);
+        if(mechanism.equals(Mechanism.MONTE_CARLO)){
+            setMonteCarlo(true);
+            generateMonteCarloRandomGrains(numberOfNucleons);
+            return;
+        }
         if (!probabilityAdded) {
             setProbabilityAdded(true);
         }
@@ -71,7 +81,29 @@ public class MultiscaleModel {
         setGrainsGenerated(true);
     }
 
+    private void generateMonteCarloRandomGrains(int numberOfNucleons) {
+        List<Cell> cells = MultiscaleModelHelper.generateRandomCells(numberOfNucleons);
+        int id;
+        Cell cell;
+        for(int i = 0; i < array.length; i++){
+            for(int j = 0; j < array[0].length; j++){
+                id = (int) Math.floor(random.nextDouble() * numberOfNucleons);
+                cell =  cells.get(id);
+                array[i][j].setRgb(cell.getRgb());
+                array[i][j].setState(cell.getState());
+                array[i][j].setId(cell.getId());
+            }
+        }
+
+        setGrainsGenerated(true);
+
+    }
+
     public void growGrainsLoop(int numberOfIterations) {
+        if(isMonteCarlo){
+            growMonteCarloGrainsLoop(numberOfIterations);
+            return;
+        }
         int k = 0;
         if (numberOfIterations >= 50 && !growingAfterBoundaries) {
             while (MultiscaleModelHelper.countEmptyCells(array) != 0 && k < 100) {
@@ -87,6 +119,87 @@ public class MultiscaleModel {
         if (MultiscaleModelHelper.countEmptyCells(array) == 0) {
             setArrayFilled(true);
         }
+    }
+
+    private void growMonteCarloGrainsLoop(int numberOfIterations) {
+        setBoundaryEnergyAdded(true);
+        for(int i = 0; i < numberOfIterations; i++){
+            growMonteCarloGrains();
+        }
+    }
+
+    private void growMonteCarloGrains() {
+        List<CellWithCoordinates> cells = addCellsWithCoordinatesToList(array);
+        int id;
+        double energyBefore, energyAfter;
+        Cell cell;
+        CellWithCoordinates cellWithCoordinates;
+        while(!cells.isEmpty()){
+            id = (int) Math.floor(random.nextDouble() * cells.size());
+            cellWithCoordinates = cells.remove(id);
+            energyBefore = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId());
+            cell = getRandomNeighbour(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId());
+            if(cell == null){
+                continue;
+            }
+            energyAfter = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cell.getId());
+            if((energyAfter - energyBefore) <= 0){
+                array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setId(cell.getId());
+                array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setRgb(cell.getRgb());
+                array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setState(cell.getState());
+            }
+        }
+    }
+
+    private Cell getRandomNeighbour(int x, int y, int id) {
+        List<Cell> cells = new ArrayList<>();
+        for(int i = x - 1; i < x + 1; i++){
+            for(int j = y - 1; j < y + 1; j++){
+                if(i >= array.length || i < 0 || j >= array[0].length || j < 0){
+                    continue;
+                }
+                if(i == x && j == y){
+                    continue;
+                }
+                if(array[i][j].getId() != id){
+                    cells.add(array[i][j]);
+                }
+            }
+        }
+        if(cells.isEmpty()){
+            return null;
+        }
+        return cells.get((int) Math.floor(random.nextDouble()*cells.size()));
+    }
+
+    private double countEnergy(int x, int y, int id) {
+        int numberOfDifferentNeighbours = 0;
+        for(int i = x - 1; i < x + 1; i++){
+            for(int j = y - 1; j < y + 1; j++){
+                if(i >= array.length || i < 0 || j >= array[0].length || j < 0){
+                    continue;
+                }
+                if(i == x && j == y){
+                    continue;
+                }
+                if(array[i][j].getId() != id){
+                    numberOfDifferentNeighbours++;
+                }
+            }
+        }
+        return boundaryEnergy * numberOfDifferentNeighbours;
+    }
+
+    private List<CellWithCoordinates> addCellsWithCoordinatesToList(Cell[][] array) {
+        List<CellWithCoordinates> cells = new ArrayList<>();
+        CellWithCoordinates cellWithCoordinates;
+        for(int i = 0; i < array.length; i++){
+            for(int j = 0; j < array[0].length; j++){
+                cellWithCoordinates = new CellWithCoordinates(array[i][j], i, j);
+                cells.add(cellWithCoordinates);
+            }
+        }
+        return cells;
     }
 
     public void stopGrowing() {
@@ -144,6 +257,8 @@ public class MultiscaleModel {
         setStructureChoosen(false);
         setBoundariesAdded(false);
         setGrowingAfterBoundaries(false);
+        setMonteCarlo(false);
+        setBoundaryEnergyAdded(false);
     }
 
     public void generateInclusions(int numberOfInclusions, float sizeOfInclusions, Shape shapeOfInclusions) {

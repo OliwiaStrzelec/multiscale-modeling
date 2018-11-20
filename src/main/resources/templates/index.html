@@ -28,7 +28,7 @@
         <div th:if="${probabilityAdded}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Probability set to ${probability} %|"></label>
         </div>
-        <div th:if="${!probabilityAdded}" class="form-group px-5 my-2 justify-content-sm-center div-border">
+        <div th:if="${!probabilityAdded && !monteCarlo}" class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/addPropability}" method="post">
 
                 <div class="mb-3">
@@ -43,11 +43,30 @@
             </form>
         </div>
 
+        <!-- Probability -->
+        <div th:if="${monteCarlo && boundaryEnergyAdded}" class="px-5 my-2 justify-content-sm-center div-border">
+            <label th:text="|Boundary energy set to ${boundaryEnergy}|"></label>
+        </div>
+        <div th:if="${monteCarlo && !boundaryEnergyAdded}" class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/addBoundaryEnergy}" method="post">
+
+                <div class="mb-3">
+                    <label for="probability">Boundary energy</label>
+                    <input th:name="boundaryEnergy" th:value="*{boundaryEnergy}" id="boundaryEnergy" type="number" step="0.01"
+                           class="form-control" placeholder="Boundary energy" min="0" max="1" required="required">
+                </div>
+
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Set boundary energy</button>
+                </center>
+            </form>
+        </div>
+
         <!-- Structure -->
         <div th:if="${structureChoosen}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Structure set to ${structure}|"></label>
         </div>
-        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded}"
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded && !monteCarlo}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/chooseStructure}" method="post">
 
@@ -79,6 +98,15 @@
             <form th:action="@{/generateGrains}" method="post">
 
                 <div class="mb-3">
+                    <label for="mechanism">Mechanism</label>
+                    <select class="custom-select" name="mechanism" id="mechanism">
+                        <option th:each="mechanism : ${T(oliwiastrzelec.multiscalemodeling.model.Mechanism).values()}"
+                                th:value="${mechanism}"
+                                th:text="${mechanism.mechanism}"></option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
                     <label for="numberOfNucleons">Number of grains</label>
                     <input th:name="numberOfNucleons" th:value="*{numberOfNucleons}" id="numberOfNucleons" type="number"
                            class="form-control" placeholder="Number of grains" min="1" max="100" required="required">
@@ -91,7 +119,7 @@
         </div>
 
         <!--Boundaries -->
-        <div th:if="${arrayFilled && !boundariesAdded}"
+        <div th:if="${arrayFilled && !boundariesAdded && !monteCarlo}"
              class="form-group px-5 mb-2 justify-content-sm-center div-border">
             <form th:action="@{/addBoundaries}" method="post">
                 <div class="mb-3">
@@ -119,7 +147,7 @@
         </div>
 
         <!-- Inclusions -->
-        <div th:if="${(((!grainsGenerated && !arrayFilled) || arrayFilled) && !boundariesAdded)}"
+        <div th:if="${(((!grainsGenerated && !arrayFilled) || arrayFilled) && !boundariesAdded && !monteCarlo)}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateInclusions}" method="post">
 
@@ -164,7 +192,7 @@
             </form>
         </div>
 
-        <div th:if="${growingAfterBoundaries && grainsGenerated}"
+        <div th:if="${(growingAfterBoundaries && grainsGenerated) || monteCarlo}"
              class="form-group px-5 mb-2 justify-content-sm-center div-border pt-2">
             <form th:action="@{/stopGrowing}" method="post">
                 <center>
