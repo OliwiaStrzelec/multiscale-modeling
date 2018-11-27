@@ -14,6 +14,7 @@ public class Cell implements Comparable<Cell> {
     private int id;
     private int[] rgb = new int[3];
     private State state;
+    private double energy = 0;
 
     public enum State {
         INCLUSION("inclusion"),

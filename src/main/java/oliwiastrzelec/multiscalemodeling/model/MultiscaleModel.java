@@ -43,7 +43,7 @@ public class MultiscaleModel {
 
     private boolean structureChoosen = false;
 
-    private static Random random = new Random();
+    private static Random random = new Random(50);
 
     private MultiscaleModel() {
     }
@@ -87,7 +87,10 @@ public class MultiscaleModel {
         Cell cell;
         for(int i = 0; i < array.length; i++){
             for(int j = 0; j < array[0].length; j++){
-                id = (int) Math.floor(random.nextDouble() * numberOfNucleons);
+                if(array[i][j].getId() != 0 || array[i][j].getState().equals(Cell.State.INCLUSION) || array[i][j].getState().equals(Cell.State.PHASE)){
+                    continue;
+                }
+                id = random.nextInt(numberOfNucleons);
                 cell =  cells.get(id);
                 array[i][j].setRgb(cell.getRgb());
                 array[i][j].setState(cell.getState());
@@ -135,8 +138,11 @@ public class MultiscaleModel {
         Cell cell;
         CellWithCoordinates cellWithCoordinates;
         while(!cells.isEmpty()){
-            id = (int) Math.floor(random.nextDouble() * cells.size());
+            id = random.nextInt(cells.size());
             cellWithCoordinates = cells.remove(id);
+            if(array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getId() < 0 || array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getState().equals(Cell.State.INCLUSION) || array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getState().equals(Cell.State.PHASE)){
+                continue;
+            }
             energyBefore = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId());
             cell = getRandomNeighbour(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId());
             if(cell == null){
@@ -147,6 +153,9 @@ public class MultiscaleModel {
                 array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setId(cell.getId());
                 array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setRgb(cell.getRgb());
                 array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setState(cell.getState());
+//                array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setEnergy(energyAfter);
+//            }else{
+//                array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setEnergy(energyBefore);
             }
         }
     }
@@ -158,10 +167,10 @@ public class MultiscaleModel {
                 if(i >= array.length || i < 0 || j >= array[0].length || j < 0){
                     continue;
                 }
-                if(i == x && j == y){
-                    continue;
-                }
-                if(array[i][j].getId() != id){
+//                if(i == x && j == y){
+//                    continue;
+//                }
+                if(array[i][j].getId() != id && !(array[i][j].getId() < 0) && !array[i][j].getState().equals(Cell.State.INCLUSION) && !array[i][j].getState().equals(Cell.State.PHASE)){
                     cells.add(array[i][j]);
                 }
             }
@@ -169,7 +178,7 @@ public class MultiscaleModel {
         if(cells.isEmpty()){
             return null;
         }
-        return cells.get((int) Math.floor(random.nextDouble()*cells.size()));
+        return cells.get(random.nextInt(cells.size()));
     }
 
     private double countEnergy(int x, int y, int id) {
@@ -179,10 +188,10 @@ public class MultiscaleModel {
                 if(i >= array.length || i < 0 || j >= array[0].length || j < 0){
                     continue;
                 }
-                if(i == x && j == y){
-                    continue;
-                }
-                if(array[i][j].getId() != id){
+//                if(i == x && j == y){
+//                    continue;
+//                }
+                if(array[i][j].getId() != id && array[i][j].getId() > 0 && !array[i][j].getState().equals(Cell.State.INCLUSION) && !array[i][j].getState().equals(Cell.State.PHASE)){
                     numberOfDifferentNeighbours++;
                 }
             }
@@ -246,6 +255,7 @@ public class MultiscaleModel {
         Substructure.addStructureToGrains(structure, array);
         setArrayFilled(false);
         setGrainsGenerated(false);
+        setMonteCarlo(false);
     }
 
     public void clear() {
