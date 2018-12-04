@@ -66,7 +66,7 @@
         <div th:if="${structureChoosen}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Structure set to ${structure}|"></label>
         </div>
-        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded && !monteCarlo}"
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/chooseStructure}" method="post">
 
@@ -192,7 +192,7 @@
             </form>
         </div>
 
-        <div th:if="${(growingAfterBoundaries && grainsGenerated) || monteCarlo}"
+        <div th:if="${(growingAfterBoundaries && grainsGenerated) || (monteCarlo && !arrayFilled)}"
              class="form-group px-5 mb-2 justify-content-sm-center div-border pt-2">
             <form th:action="@{/stopGrowing}" method="post">
                 <center>
