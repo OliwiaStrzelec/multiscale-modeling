@@ -5,6 +5,9 @@ import lombok.Setter;
 
 import java.util.*;
 
+import static java.lang.Math.min;
+import static java.lang.StrictMath.max;
+
 @Getter
 @Setter
 public class MultiscaleModel {
@@ -17,6 +20,8 @@ public class MultiscaleModel {
 
     private Cell[][] array = MultiscaleModelHelper.generateEmptyArray(sizeX, sizeY);
 
+    private Cell[][] energyArray = MultiscaleModelHelper.generateEmptyArray(sizeX, sizeY);
+
     private boolean grainsGenerated = false;
 
     private int numberOfGrains = 0;
@@ -28,6 +33,10 @@ public class MultiscaleModel {
     private boolean boundaryEnergyAdded = false;
 
     private boolean boundariesAdded = false;
+
+    private boolean energyArrayFilled = false;
+
+    private boolean energyView = false;
 
     private boolean growingAfterBoundaries = false;
 
@@ -57,7 +66,7 @@ public class MultiscaleModel {
 
     public void generateRandomGrains(Mechanism mechanism, int numberOfNucleons) {
         setNumberOfGrains(numberOfNucleons);
-        if(mechanism.equals(Mechanism.MONTE_CARLO)){
+        if (mechanism.equals(Mechanism.MONTE_CARLO)) {
             setMonteCarlo(true);
             generateMonteCarloRandomGrains(numberOfNucleons);
             return;
@@ -85,13 +94,13 @@ public class MultiscaleModel {
         List<Cell> cells = MultiscaleModelHelper.generateRandomCells(numberOfNucleons);
         int id;
         Cell cell;
-        for(int i = 0; i < array.length; i++){
-            for(int j = 0; j < array[0].length; j++){
-                if(array[i][j].getId() != 0 || array[i][j].getState().equals(Cell.State.INCLUSION) || array[i][j].getState().equals(Cell.State.PHASE)){
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[0].length; j++) {
+                if (array[i][j].getId() != 0 || array[i][j].getState().equals(Cell.State.INCLUSION) || array[i][j].getState().equals(Cell.State.PHASE)) {
                     continue;
                 }
                 id = random.nextInt(numberOfNucleons);
-                cell =  cells.get(id);
+                cell = cells.get(id);
                 array[i][j].setRgb(cell.getRgb());
                 array[i][j].setState(cell.getState());
                 array[i][j].setId(cell.getId());
@@ -103,7 +112,7 @@ public class MultiscaleModel {
     }
 
     public void growGrainsLoop(int numberOfIterations) {
-        if(isMonteCarlo){
+        if (isMonteCarlo) {
             growMonteCarloGrainsLoop(numberOfIterations);
             return;
         }
@@ -126,7 +135,7 @@ public class MultiscaleModel {
 
     private void growMonteCarloGrainsLoop(int numberOfIterations) {
         setBoundaryEnergyAdded(true);
-        for(int i = 0; i < numberOfIterations; i++){
+        for (int i = 0; i < numberOfIterations; i++) {
             growMonteCarloGrains();
         }
     }
@@ -137,19 +146,19 @@ public class MultiscaleModel {
         double energyBefore, energyAfter;
         Cell cell;
         CellWithCoordinates cellWithCoordinates;
-        while(!cells.isEmpty()){
+        while (!cells.isEmpty()) {
             id = random.nextInt(cells.size());
             cellWithCoordinates = cells.remove(id);
-            if(array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getId() < 0 || array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getState().equals(Cell.State.INCLUSION) || array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getState().equals(Cell.State.PHASE)){
+            if (array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getId() < 0 || array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getState().equals(Cell.State.INCLUSION) || array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].getState().equals(Cell.State.PHASE)) {
                 continue;
             }
             energyBefore = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId());
             cell = getRandomNeighbour(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId());
-            if(cell == null){
+            if (cell == null) {
                 continue;
             }
             energyAfter = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cell.getId());
-            if((energyAfter - energyBefore) <= 0){
+            if ((energyAfter - energyBefore) <= 0) {
                 array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setId(cell.getId());
                 array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setRgb(cell.getRgb());
                 array[cellWithCoordinates.getX()][cellWithCoordinates.getY()].setState(cell.getState());
@@ -162,20 +171,20 @@ public class MultiscaleModel {
 
     private Cell getRandomNeighbour(int x, int y, int id) {
         List<Cell> cells = new ArrayList<>();
-        for(int i = x - 1; i < x + 1; i++){
-            for(int j = y - 1; j < y + 1; j++){
-                if(i >= array.length || i < 0 || j >= array[0].length || j < 0){
+        for (int i = x - 1; i < x + 1; i++) {
+            for (int j = y - 1; j < y + 1; j++) {
+                if (i >= array.length || i < 0 || j >= array[0].length || j < 0) {
                     continue;
                 }
 //                if(i == x && j == y){
 //                    continue;
 //                }
-                if(array[i][j].getId() != id && !(array[i][j].getId() < 0) && !array[i][j].getState().equals(Cell.State.INCLUSION) && !array[i][j].getState().equals(Cell.State.PHASE)){
+                if (array[i][j].getId() != id && !(array[i][j].getId() < 0) && !array[i][j].getState().equals(Cell.State.INCLUSION) && !array[i][j].getState().equals(Cell.State.PHASE)) {
                     cells.add(array[i][j]);
                 }
             }
         }
-        if(cells.isEmpty()){
+        if (cells.isEmpty()) {
             return null;
         }
         return cells.get(random.nextInt(cells.size()));
@@ -183,15 +192,15 @@ public class MultiscaleModel {
 
     private double countEnergy(int x, int y, int id) {
         int numberOfDifferentNeighbours = 0;
-        for(int i = x - 1; i < x + 1; i++){
-            for(int j = y - 1; j < y + 1; j++){
-                if(i >= array.length || i < 0 || j >= array[0].length || j < 0){
+        for (int i = x - 1; i < x + 1; i++) {
+            for (int j = y - 1; j < y + 1; j++) {
+                if (i >= array.length || i < 0 || j >= array[0].length || j < 0) {
                     continue;
                 }
 //                if(i == x && j == y){
 //                    continue;
 //                }
-                if(array[i][j].getId() != id && array[i][j].getId() > 0 && !array[i][j].getState().equals(Cell.State.INCLUSION) && !array[i][j].getState().equals(Cell.State.PHASE)){
+                if (array[i][j].getId() != id && array[i][j].getId() > 0 && !array[i][j].getState().equals(Cell.State.INCLUSION) && !array[i][j].getState().equals(Cell.State.PHASE)) {
                     numberOfDifferentNeighbours++;
                 }
             }
@@ -202,8 +211,8 @@ public class MultiscaleModel {
     private List<CellWithCoordinates> addCellsWithCoordinatesToList(Cell[][] array) {
         List<CellWithCoordinates> cells = new ArrayList<>();
         CellWithCoordinates cellWithCoordinates;
-        for(int i = 0; i < array.length; i++){
-            for(int j = 0; j < array[0].length; j++){
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[0].length; j++) {
                 cellWithCoordinates = new CellWithCoordinates(array[i][j], i, j);
                 cells.add(cellWithCoordinates);
             }
@@ -269,6 +278,8 @@ public class MultiscaleModel {
         setGrowingAfterBoundaries(false);
         setMonteCarlo(false);
         setBoundaryEnergyAdded(false);
+        setEnergyView(false);
+        setEnergyArrayFilled(false);
     }
 
     public void generateInclusions(int numberOfInclusions, float sizeOfInclusions, Shape shapeOfInclusions) {
@@ -456,4 +467,90 @@ public class MultiscaleModel {
         return MultiscaleModelHelper.cloneArray(array);
     }
 
+    public void countEnergy(EnergyDistribution energyDistribution, int firstEnergyValue, int secondEnergyValue) {
+        if (energyDistribution.equals(EnergyDistribution.HOMOGENOUS)) {
+            countEnergyHomogenous(firstEnergyValue);
+        } else {
+            countEnergyHeterogenous(firstEnergyValue, secondEnergyValue);
+        }
+        fillEnergyArray();
+        setEnergyArrayFilled(true);
+    }
+
+    private void fillEnergyArray() {
+        for (int i = 0; i < energyArray.length; i++) {
+            for (int j = 0; j < energyArray[0].length; j++) {
+                energyArray[i][j].setRgb(new int[]{200 * array[i][j].getEnergy() / 15 + 55, 0, 0});
+            }
+        }
+        return;
+    }
+
+    private void countEnergyHeterogenous(int firstEnergyValue, int secondEnergyValue) {
+        int min, max;
+        if (firstEnergyValue != secondEnergyValue) {
+            min = min(firstEnergyValue, secondEnergyValue);
+            max = max(firstEnergyValue, secondEnergyValue);
+        } else {
+            min = firstEnergyValue;
+            max = firstEnergyValue + 5;
+        }
+        countEnergyHomogenous(min);
+        countEnergyIfGrainBorder(max);
+    }
+
+    private void countEnergyIfGrainsBorder(int energy, int x, int y, Cell[][] borderCells, int boundarySize) {
+        for (int i = x - 1; i <= x + 1; i++) {
+            if (i < 0 || i >= sizeX) {
+                continue;
+            }
+            if (array[i][y].getId() != array[x][y].getId()) {
+                borderCells[x][y] = array[i][y];
+                borderCells[x][y].setEnergy(energy);
+//                countEnergyXDimension(x, y, borderCells, boundarySize);
+            }
+        }
+        for (int i = y - 1; i <= y + 1; i++) {
+            if (i < 0 || i >= sizeY) {
+                continue;
+            }
+            if (array[x][i].getId() != array[x][y].getId()) {
+                borderCells[x][y] = array[x][i];
+                borderCells[x][y].setEnergy(energy);
+//                countEnergyYDimension(x, y, borderCells, boundarySize);
+            }
+        }
+    }
+
+    private void countEnergyIfGrainBorder(int max) {
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[0].length; j++) {
+                countEnergyIfGrainsBorder(max, i, j, array, 1);
+            }
+        }
+    }
+
+    private void countEnergyHomogenous(int firstEnergyValue) {
+        for (int i = 0; i < array.length; i++) {
+            for (int j = 0; j < array[0].length; j++) {
+                array[i][j].setEnergy(firstEnergyValue);
+            }
+        }
+    }
+
+    public void switchView() {
+        if (energyView) {
+            setEnergyView(false);
+        } else {
+            setEnergyView(true);
+        }
+    }
+
+    public Cell[][] getArrayToPrint() {
+        if (!energyView) {
+            return MultiscaleModel.getInstance().getArray();
+        } else {
+            return MultiscaleModel.getInstance().getEnergyArray();
+        }
+    }
 }

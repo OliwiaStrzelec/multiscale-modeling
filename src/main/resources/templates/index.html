@@ -62,6 +62,47 @@
             </form>
         </div>
 
+        <!-- Energy distribution -->
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded}"
+             class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/energyDistribution}" method="post">
+
+                <div class="mb-3">
+                    <label for="structure">Energy distribution</label>
+                    <select class="custom-select" name="energyDistribution" id="energyDistribution">
+                        <option th:each="energy : ${T(oliwiastrzelec.multiscalemodeling.model.EnergyDistribution).values()}"
+                                th:value="${energy}"
+                                th:text="${energy.energy}"></option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="firstEnergyValue">First energy value</label>
+                    <input th:name="firstEnergyValue" th:value="*{firstEnergyValue}" id="firstEnergyValue"
+                           type="number"
+                           class="form-control" placeholder="First energy value" min="1" max="10" required="required">
+                </div>
+                <div class="mb-3">
+                    <label for="secondEnergyValue">Second energy value</label>
+                    <input th:name="secondEnergyValue" th:value="*{secondEnergyValue}" id="secondEnergyValue"
+                           type="number"
+                           class="form-control" placeholder="Second energy value" min="5" max="15">
+                </div>
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Count energy</button>
+                </center>
+            </form>
+        </div>
+
+        <!-- Switch view -->
+        <div th:if="${energyArrayFilled}"
+             class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/switchView}" method="post">
+                <center>
+                    <button type="submit" class="btn mt-2 btn-lg btn-secondary">Switch view</button>
+                </center>
+            </form>
+        </div>
+
         <!-- Structure -->
         <div th:if="${structureChoosen}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Structure set to ${structure}|"></label>
@@ -267,9 +308,6 @@
     var sizeY = [[${sizeY}]];
     var array = [[${array}]];
     drawCells(sizeX, sizeY, array);
-
-
-
 </script>
 </body>
 </html>

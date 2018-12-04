@@ -1,9 +1,6 @@
 package oliwiastrzelec.multiscalemodeling.controller;
 
-import oliwiastrzelec.multiscalemodeling.model.Mechanism;
-import oliwiastrzelec.multiscalemodeling.model.MultiscaleModel;
-import oliwiastrzelec.multiscalemodeling.model.Shape;
-import oliwiastrzelec.multiscalemodeling.model.Structure;
+import oliwiastrzelec.multiscalemodeling.model.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -112,10 +109,34 @@ public class MainController {
     }
 
 
+    @PostMapping("/energyDistribution")
+    public String chooseStructure(@RequestParam("energyDistribution") EnergyDistribution energyDistribution,
+                                  @RequestParam("firstEnergyValue") int firstEnergyValue,
+                                  @RequestParam("secondEnergyValue") String secondEnergyValue,
+                                  Model model) {
+        int secondEnergyValueInt;
+        if(secondEnergyValue == null || secondEnergyValue.isEmpty()){
+            secondEnergyValueInt = 0;
+        }else{
+            secondEnergyValueInt = Integer.parseInt(secondEnergyValue);
+        }
+        MultiscaleModel.getInstance().countEnergy(energyDistribution, firstEnergyValue, secondEnergyValueInt);
+        addAttributes(model);
+        return "index";
+    }
+
+    @PostMapping("/switchView")
+    public String switchView(Model model) {
+        MultiscaleModel.getInstance().switchView();
+        addAttributes(model);
+        return "index";
+    }
+
+
     private void addAttributes(Model model) {
         model.addAttribute("sizeX", MultiscaleModel.getInstance().getSizeX());
         model.addAttribute("sizeY", MultiscaleModel.getInstance().getSizeY());
-        model.addAttribute("array", MultiscaleModel.getInstance().getArray());
+        model.addAttribute("array", MultiscaleModel.getInstance().getArrayToPrint());
         model.addAttribute("grainsGenerated", MultiscaleModel.getInstance().isGrainsGenerated());
         model.addAttribute("arrayFilled", MultiscaleModel.getInstance().isArrayFilled());
         model.addAttribute("probabilityAdded", MultiscaleModel.getInstance().isProbabilityAdded());
@@ -130,6 +151,7 @@ public class MainController {
         model.addAttribute("monteCarlo", MultiscaleModel.getInstance().isMonteCarlo());
         model.addAttribute("boundaryEnergyAdded", MultiscaleModel.getInstance().isBoundaryEnergyAdded());
         model.addAttribute("boundaryEnergy", MultiscaleModel.getInstance().getBoundaryEnergy());
+        model.addAttribute("energyArrayFilled", MultiscaleModel.getInstance().isEnergyArrayFilled());
 //        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
     }
 
