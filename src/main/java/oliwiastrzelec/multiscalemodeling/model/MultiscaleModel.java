@@ -18,6 +18,8 @@ public class MultiscaleModel {
 
     private final int sizeY = 200;
 
+    private int numberOfRecrystalizedNucleons = 0;
+
     private Cell[][] array = MultiscaleModelHelper.generateEmptyArray(sizeX, sizeY);
 
     private Cell[][] energyArray = MultiscaleModelHelper.generateEmptyArray(sizeX, sizeY);
@@ -33,6 +35,8 @@ public class MultiscaleModel {
     private boolean boundaryEnergyAdded = false;
 
     private boolean boundariesAdded = false;
+
+    private boolean energyDistributionAdded = false;
 
     private boolean energyArrayFilled = false;
 
@@ -280,6 +284,8 @@ public class MultiscaleModel {
         setBoundaryEnergyAdded(false);
         setEnergyView(false);
         setEnergyArrayFilled(false);
+        setEnergyDistributionAdded(false);
+        setNumberOfRecrystalizedNucleons(0);
     }
 
     public void generateInclusions(int numberOfInclusions, float sizeOfInclusions, Shape shapeOfInclusions) {
@@ -468,6 +474,7 @@ public class MultiscaleModel {
     }
 
     public void countEnergy(EnergyDistribution energyDistribution, int firstEnergyValue, int secondEnergyValue) {
+        setEnergyDistributionAdded(true);
         if (energyDistribution.equals(EnergyDistribution.HOMOGENOUS)) {
             countEnergyHomogenous(firstEnergyValue);
         } else {
@@ -551,6 +558,42 @@ public class MultiscaleModel {
             return MultiscaleModel.getInstance().getArray();
         } else {
             return MultiscaleModel.getInstance().getEnergyArray();
+        }
+    }
+
+    public void generateRecrystalizedGrains(Place place, int numberOfNucleons) {
+        setNumberOfRecrystalizedNucleons(getNumberOfRecrystalizedNucleons() + numberOfNucleons);
+        List<Cell> cells = MultiscaleModelHelper.generateRandomRecrystalizedNucleons(numberOfNucleons);
+        int x;
+        int y;
+        int i = numberOfNucleons - 1;
+        Cell c;
+        // for(int i = numberOfNucleons - 1; i >= 0; i--){
+        while (!cells.isEmpty()) {
+            x = (int) (Math.floor(Math.random() * (sizeX - 2)) + 1);
+            y = (int) (Math.floor(Math.random() * (sizeY - 2)) + 1);
+            if(place.equals(Place.BORDERS)){
+                if ((c = array[x][y]).getId() >= 0 && MultiscaleModelHelper.isGrainsBorder(x, y, c.getId(), array) && !c.getState().equals(Cell.State.INCLUSION) && !c.getState().equals(Cell.State.PHASE) && !c.getState().equals(Cell.State.INSIDE_BORDER)) {
+                    array[x][y] = cells.remove(i--);
+                }
+            }
+            else{
+                if ((c = array[x][y]).getId() >= 0 && !c.getState().equals(Cell.State.INCLUSION) && !c.getState().equals(Cell.State.PHASE) && !c.getState().equals(Cell.State.INSIDE_BORDER)) {
+                    array[x][y] = cells.remove(i--);
+                }
+            }
+        }
+        updateEnergyArray();
+    }
+
+    private void updateEnergyArray() {
+        Cell c;
+        for(int i = 0; i < energyArray.length; i++){
+            for(int j = 0; j < energyArray[0].length; j++){
+                if((c = array[i][j]).getState().equals(Cell.State.RECRYSTALIZED)){
+                    energyArray[i][j].setRgb(new int[]{0, 0, 0});
+                }
+            }
         }
     }
 }

@@ -26,6 +26,15 @@ public class MainController {
         return "index";
     }
 
+    @PostMapping("/generateRecrystalizedGrains")
+    public String generateGrains(@RequestParam("numberOfRecrystalizedNucleons") int numberOfNucleons,
+                                 @RequestParam("placeOfNucleons") Place placeOfNucleons,
+                                 Model model) {
+        MultiscaleModel.getInstance().generateRecrystalizedGrains(placeOfNucleons, numberOfNucleons);
+        addAttributes(model);
+        return "index";
+    }
+
     @PostMapping("/clear")
     public String clear(Model model) {
         MultiscaleModel.getInstance().clear();
@@ -152,6 +161,7 @@ public class MainController {
         model.addAttribute("boundaryEnergyAdded", MultiscaleModel.getInstance().isBoundaryEnergyAdded());
         model.addAttribute("boundaryEnergy", MultiscaleModel.getInstance().getBoundaryEnergy());
         model.addAttribute("energyArrayFilled", MultiscaleModel.getInstance().isEnergyArrayFilled());
+        model.addAttribute("energyDistributionAdded", MultiscaleModel.getInstance().isEnergyDistributionAdded());
 //        model.addAttribute("inclusionAdded", MultiscaleModel.getInstance().isInclusionAdded());
     }
 

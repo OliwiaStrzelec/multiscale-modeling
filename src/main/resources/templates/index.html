@@ -63,7 +63,7 @@
         </div>
 
         <!-- Energy distribution -->
-        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded}"
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded && !energyDistributionAdded}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/energyDistribution}" method="post">
 
@@ -104,10 +104,10 @@
         </div>
 
         <!-- Structure -->
-        <div th:if="${structureChoosen}" class="px-5 my-2 justify-content-sm-center div-border">
+        <div th:if="${structureChoosen && !energyDistributionAdded}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Structure set to ${structure}|"></label>
         </div>
-        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded}"
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded && !energyDistributionAdded}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/chooseStructure}" method="post">
 
@@ -127,6 +127,29 @@
                 </div>
                 <center>
                     <button type="submit" class="btn btn-lg btn-secondary">Add structure</button>
+                </center>
+            </form>
+        </div>
+
+        <!-- Add recrystalized nucleons -->
+        <div th:if="${energyDistributionAdded}" class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/generateRecrystalizedGrains}" method="post">
+
+                <div class="mb-3">
+                    <label for="numberOfRecrystalizedNucleons">Number of recrystalized nucleons</label>
+                    <input th:name="numberOfRecrystalizedNucleons" th:value="*{numberOfRecrystalizedNucleons}" id="numberOfRecrystalizedNucleons" type="number"
+                           class="form-control" placeholder="Number of grains" min="1" max="10" required="required">
+                </div>
+                <div>
+                    <label for="placeOfNucleons">Where</label>
+                    <select class="custom-select mb-3" name="placeOfNucleons" id="placeOfNucleons">
+                        <option th:each="place : ${T(oliwiastrzelec.multiscalemodeling.model.Place).values()}"
+                                th:value="${place}"
+                                th:text="${place.place}"></option>
+                    </select>
+                </div>
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Add nucleons</button>
                 </center>
             </form>
         </div>
@@ -160,7 +183,7 @@
         </div>
 
         <!--Boundaries -->
-        <div th:if="${arrayFilled && !boundariesAdded && !monteCarlo}"
+        <div th:if="${arrayFilled && !boundariesAdded && !monteCarlo && !energyDistributionAdded}"
              class="form-group px-5 mb-2 justify-content-sm-center div-border">
             <form th:action="@{/addBoundaries}" method="post">
                 <div class="mb-3">
@@ -188,7 +211,7 @@
         </div>
 
         <!-- Inclusions -->
-        <div th:if="${(((!grainsGenerated && !arrayFilled) || arrayFilled) && !boundariesAdded && !monteCarlo)}"
+        <div th:if="${(((!grainsGenerated && !arrayFilled) || arrayFilled) && !boundariesAdded && !monteCarlo && !energyDistributionAdded)}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateInclusions}" method="post">
 
