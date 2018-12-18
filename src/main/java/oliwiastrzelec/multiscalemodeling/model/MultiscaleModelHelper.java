@@ -70,7 +70,7 @@ public class MultiscaleModelHelper {
     public static int[] generateRandomRecrystalizedColor() {
         int[] color = new int[3];
         color[0] = 0;
-        color[1] = (int) (Math.floor(Math.random() * 220) + 36);
+        color[1] = (int) (Math.floor(Math.random() * 50) + 150);
         color[2] = (int) (Math.floor(Math.random() * 220) + 36);
         return color;
     }

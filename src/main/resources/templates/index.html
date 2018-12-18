@@ -155,7 +155,7 @@
         </div>
 
         <!-- Number of grains -->
-        <div th:if="${grainsGenerated}" class="px-5 my-2 justify-content-sm-center div-border">
+        <div th:if="${grainsGenerated && !energyDistributionAdded}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Number of grains set to ${numberOfGrains}|"></label>
         </div>
         <div th:if="${!grainsGenerated}" class="form-group px-5 my-2 justify-content-sm-center div-border">
@@ -241,7 +241,7 @@
         </div>
 
         <!-- Grains growth -->
-        <div th:if="${grainsGenerated && !arrayFilled}"
+        <div th:if="${(grainsGenerated && !arrayFilled) || energyDistributionAdded}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/growGrains}" method="post">
                 <div class="mb-3">
