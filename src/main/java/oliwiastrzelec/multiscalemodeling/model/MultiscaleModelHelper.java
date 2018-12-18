@@ -67,6 +67,14 @@ public class MultiscaleModelHelper {
         return color;
     }
 
+    public static int[] generateRandomRecrystalizedColor() {
+        int[] color = new int[3];
+        color[0] = 0;
+        color[1] = (int) (Math.floor(Math.random() * 50) + 150);
+        color[2] = (int) (Math.floor(Math.random() * 220) + 36);
+        return color;
+    }
+
     private static Cell generateRandomCell(int x, int y) {
         Cell cell = new Cell(Integer.valueOf(String.valueOf(x) + String.valueOf(y)));
         cell.setRgb(generateRandomColor());
@@ -135,5 +143,14 @@ public class MultiscaleModelHelper {
             }
         }
         return false;
+    }
+
+    public static List<Cell> generateRandomRecrystalizedNucleons(int numberOfNucleons) {
+        List<Cell> cells = new ArrayList<>();
+        for (int i = 1; i <= numberOfNucleons; i++) {
+            Cell c = new Cell(Cell.State.RECRYSTALIZED);
+            cells.add(c);
+        }
+        return cells;
     }
 }

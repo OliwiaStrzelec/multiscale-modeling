@@ -14,13 +14,14 @@ public class Cell implements Comparable<Cell> {
     private int id;
     private int[] rgb = new int[3];
     private State state;
-    private double energy = 0;
+    private int energy = 0;
 
     public enum State {
         INCLUSION("inclusion"),
         GRAIN("grain"),
         PHASE("phase"),
         BORDER("border"),
+        RECRYSTALIZED("recrystalized"),
         INSIDE_BORDER("inside_border");
 
         @Getter
@@ -41,6 +42,12 @@ public class Cell implements Comparable<Cell> {
 
     public Cell(State state) {
         this.state = state;
+        if(state.equals(State.RECRYSTALIZED)){
+            this.setId(-5);
+            this.setEnergy(0);
+            this.setRgb(MultiscaleModelHelper.generateRandomRecrystalizedColor());
+        }
+
         if (state.equals(State.INCLUSION)) {
             this.rgb[0] = 0;
             this.rgb[1] = 0;

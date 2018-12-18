@@ -62,11 +62,52 @@
             </form>
         </div>
 
+        <!-- Energy distribution -->
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded && !energyDistributionAdded}"
+             class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/energyDistribution}" method="post">
+
+                <div class="mb-3">
+                    <label for="structure">Energy distribution</label>
+                    <select class="custom-select" name="energyDistribution" id="energyDistribution">
+                        <option th:each="energy : ${T(oliwiastrzelec.multiscalemodeling.model.EnergyDistribution).values()}"
+                                th:value="${energy}"
+                                th:text="${energy.energy}"></option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="firstEnergyValue">First energy value</label>
+                    <input th:name="firstEnergyValue" th:value="*{firstEnergyValue}" id="firstEnergyValue"
+                           type="number"
+                           class="form-control" placeholder="First energy value" min="1" max="5" required="required">
+                </div>
+                <div class="mb-3">
+                    <label for="secondEnergyValue">Second energy value</label>
+                    <input th:name="secondEnergyValue" th:value="*{secondEnergyValue}" id="secondEnergyValue"
+                           type="number"
+                           class="form-control" placeholder="Second energy value" min="5" max="10">
+                </div>
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Count energy</button>
+                </center>
+            </form>
+        </div>
+
+        <!-- Switch view -->
+        <div th:if="${energyArrayFilled}"
+             class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/switchView}" method="post">
+                <center>
+                    <button type="submit" class="btn mt-2 btn-lg btn-secondary">Switch view</button>
+                </center>
+            </form>
+        </div>
+
         <!-- Structure -->
-        <div th:if="${structureChoosen}" class="px-5 my-2 justify-content-sm-center div-border">
+        <div th:if="${structureChoosen && !energyDistributionAdded}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Structure set to ${structure}|"></label>
         </div>
-        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded}"
+        <div th:if="${arrayFilled && !structureChoosen && !boundariesAdded && !energyDistributionAdded}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/chooseStructure}" method="post">
 
@@ -90,8 +131,31 @@
             </form>
         </div>
 
+        <!-- Add recrystalized nucleons -->
+        <div th:if="${energyDistributionAdded}" class="form-group px-5 my-2 justify-content-sm-center div-border">
+            <form th:action="@{/generateRecrystalizedGrains}" method="post">
+
+                <div class="mb-3">
+                    <label for="numberOfRecrystalizedNucleons">Number of recrystalized nucleons</label>
+                    <input th:name="numberOfRecrystalizedNucleons" th:value="*{numberOfRecrystalizedNucleons}" id="numberOfRecrystalizedNucleons" type="number"
+                           class="form-control" placeholder="Number of grains" min="1" max="10" required="required">
+                </div>
+                <div>
+                    <label for="placeOfNucleons">Where</label>
+                    <select class="custom-select mb-3" name="placeOfNucleons" id="placeOfNucleons">
+                        <option th:each="place : ${T(oliwiastrzelec.multiscalemodeling.model.Place).values()}"
+                                th:value="${place}"
+                                th:text="${place.place}"></option>
+                    </select>
+                </div>
+                <center>
+                    <button type="submit" class="btn btn-lg btn-secondary">Add nucleons</button>
+                </center>
+            </form>
+        </div>
+
         <!-- Number of grains -->
-        <div th:if="${grainsGenerated}" class="px-5 my-2 justify-content-sm-center div-border">
+        <div th:if="${grainsGenerated && !energyDistributionAdded}" class="px-5 my-2 justify-content-sm-center div-border">
             <label th:text="|Number of grains set to ${numberOfGrains}|"></label>
         </div>
         <div th:if="${!grainsGenerated}" class="form-group px-5 my-2 justify-content-sm-center div-border">
@@ -119,7 +183,7 @@
         </div>
 
         <!--Boundaries -->
-        <div th:if="${arrayFilled && !boundariesAdded && !monteCarlo}"
+        <div th:if="${arrayFilled && !boundariesAdded && !monteCarlo && !energyDistributionAdded}"
              class="form-group px-5 mb-2 justify-content-sm-center div-border">
             <form th:action="@{/addBoundaries}" method="post">
                 <div class="mb-3">
@@ -147,7 +211,7 @@
         </div>
 
         <!-- Inclusions -->
-        <div th:if="${(((!grainsGenerated && !arrayFilled) || arrayFilled) && !boundariesAdded && !monteCarlo)}"
+        <div th:if="${(((!grainsGenerated && !arrayFilled) || arrayFilled) && !boundariesAdded && !monteCarlo && !energyDistributionAdded)}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/generateInclusions}" method="post">
 
@@ -177,7 +241,7 @@
         </div>
 
         <!-- Grains growth -->
-        <div th:if="${grainsGenerated && !arrayFilled}"
+        <div th:if="${(grainsGenerated && !arrayFilled) || energyDistributionAdded}"
              class="form-group px-5 my-2 justify-content-sm-center div-border">
             <form th:action="@{/growGrains}" method="post">
                 <div class="mb-3">
@@ -267,9 +331,6 @@
     var sizeY = [[${sizeY}]];
     var array = [[${array}]];
     drawCells(sizeX, sizeY, array);
-
-
-
 </script>
 </body>
 </html>
