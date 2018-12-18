@@ -3,7 +3,6 @@ package oliwiastrzelec.multiscalemodeling.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -119,7 +118,7 @@ public class MultiscaleModel {
 
     public void growGrainsLoop(int numberOfIterations) {
         if (energyDistributionAdded) {
-            recrystalizationLoop(numberOfIterations);
+            growRecrystalizationLoop(numberOfIterations);
             return;
         }
         if (isMonteCarlo) {
@@ -143,9 +142,9 @@ public class MultiscaleModel {
         }
     }
 
-    private void recrystalizationLoop(int numberOfIterations) {
+    private void growRecrystalizationLoop(int numberOfIterations) {
         for (int i = 0; i < numberOfIterations; i++) {
-            recrystalization();
+            growRecrystalization();
             updateEnergyArray();
         }
     }
@@ -157,36 +156,47 @@ public class MultiscaleModel {
         }
     }
 
-    private void recrystalization() {
-        List<CellWithCoordinates> cells = new ArrayList<>();
-        for (int i = 0; i < array.length; i++) {
-            for (int j = 0; j < array[0].length; j++) {
-                if (array[i][j].getId() != -5) {
-                    cells.add(new CellWithCoordinates(array[i][j], i, j));
-                }
-            }
-        }
+    private void growRecrystalization() {
+        List<CellWithCoordinates> cells = addCellsWithCoordinatesToList(array);
         int id;
-        double energyBefore, energyAfter;
-        Cell cell;
-        CellWithCoordinates cellWithCoordinates, recrystalizedNeighbour;
+        CellWithCoordinates cellWithCoordinates;
         while (!cells.isEmpty()) {
             id = random.nextInt(cells.size());
             cellWithCoordinates = cells.remove(id);
-            if ((recrystalizedNeighbour = getRecrystalizedNeighbour(cellWithCoordinates.getX(), cellWithCoordinates.getY())) == null) {
-                continue;
-            }
-            System.out.println("recrystalization");
-            if (cellWithCoordinates.getId() != -5) {
-                energyBefore = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId()) + array[cellWithCoordinates.getY()][cellWithCoordinates.getY()].getEnergy();
-                energyAfter = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), -5);
-                System.out.println(energyBefore + " " + energyAfter);
-                if (energyAfter - energyBefore < 0) {
-                    array[cellWithCoordinates.getX()][cellWithCoordinates.getY()] = recrystalizedNeighbour;
-                }
-            }
+            recrystalization(cellWithCoordinates.getX(), cellWithCoordinates.getY());
         }
     }
+
+//    private void recrystalization() {
+//        List<CellWithCoordinates> cells = new ArrayList<>();
+//        for (int i = 0; i < array.length; i++) {
+//            for (int j = 0; j < array[0].length; j++) {
+//                if (array[i][j].getId() != -5) {
+//                    cells.add(new CellWithCoordinates(array[i][j], i, j));
+//                }
+//            }
+//        }
+//        int id;
+//        double energyBefore, energyAfter;
+//        Cell cell;
+//        CellWithCoordinates cellWithCoordinates, recrystalizedNeighbour;
+//        while (!cells.isEmpty()) {
+//            id = random.nextInt(cells.size());
+//            cellWithCoordinates = cells.remove(id);
+//            if ((recrystalizedNeighbour = getRecrystalizedNeighbour(cellWithCoordinates.getX(), cellWithCoordinates.getY())) == null) {
+//                continue;
+//            }
+//            System.out.println("recrystalization");
+//            if (cellWithCoordinates.getId() != -5) {
+//                energyBefore = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), cellWithCoordinates.getId()) + array[cellWithCoordinates.getY()][cellWithCoordinates.getY()].getEnergy();
+//                energyAfter = countEnergy(cellWithCoordinates.getX(), cellWithCoordinates.getY(), -5);
+//                System.out.println(energyBefore + " " + energyAfter);
+//                if (energyAfter - energyBefore < 0) {
+//                    array[cellWithCoordinates.getX()][cellWithCoordinates.getY()] = recrystalizedNeighbour;
+//                }
+//            }
+//        }
+//    }
 
     private CellWithCoordinates getRecrystalizedNeighbour(int x, int y) {
         for (int i = x - 1; i <= x + 1; i++) {
@@ -213,6 +223,49 @@ public class MultiscaleModel {
             cellWithCoordinates = cells.remove(id);
             growMonteCarlo(cellWithCoordinates.getX(), cellWithCoordinates.getY());
         }
+    }
+
+
+    private void recrystalization(int x, int y) {
+        double energyBefore, energyAfter;
+        List<Cell> neighboursBefore, neighboursAfter, neighbours;
+        Cell cell, neighbour;
+        if((cell = array[x][y]).getState().equals(Cell.State.BORDER) || cell.getState().equals(Cell.State.INCLUSION) || cell.getState().equals(Cell.State.PHASE)){
+            return;
+        }
+        neighboursBefore = getRNeighbours(x, y, cell.getId());
+        neighbours = getDistinctNeighbours(getRecrystalizedNeighbours(x, y, cell.getId()));
+        if(neighbours.size() == 0){
+            return;
+        }
+        energyBefore = neighboursBefore.size() * boundaryEnergy + cell.getEnergy();
+        Cell newCell = neighbours.get(random.nextInt(neighbours.size()));
+        neighboursAfter = getRNeighbours(x, y, newCell.getId());
+        energyAfter = neighboursAfter.size() * boundaryEnergy;
+        if ((energyAfter - energyBefore) < 0) {
+            array[x][y].setId(newCell.getId());
+            array[x][y].setRgb(newCell.getRgb());
+            array[x][y].setState(newCell.getState());
+            array[x][y].setEnergy(newCell.getEnergy());
+        }
+    }
+
+    private List<Cell> getRNeighbours(int x, int y, int id) {
+        List<Cell> cells = new ArrayList<>();
+        for (int i = x - 1; i <= x + 1; i++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                if (i >= array.length || i < 0 || j >= array[0].length || j < 0) {
+                    continue;
+                }
+                if(i == x && j == y){
+                    continue;
+                }
+                if (array[i][j].getId() != id && !array[i][j].getState().equals(Cell.State.INCLUSION) && !array[i][j].getState().equals(Cell.State.PHASE)) {
+                    cells.add(array[i][j]);
+                }
+            }
+        }
+        return cells;
     }
 
     private void growMonteCarlo(int x, int y) {
@@ -251,6 +304,25 @@ public class MultiscaleModel {
         List<Cell> cells = new ArrayList<>();
         neighboursBefore.forEach(cell -> cellsSet.add(cell));
         cellsSet.forEach(cell -> cells.add(cell));
+        return cells;
+    }
+
+
+    private List<Cell> getRecrystalizedNeighbours(int x, int y, int id) {
+        List<Cell> cells = new ArrayList<>();
+        for (int i = x - 1; i <= x + 1; i++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                if (i >= array.length || i < 0 || j >= array[0].length || j < 0) {
+                    continue;
+                }
+                if(i == x && j == y){
+                    continue;
+                }
+                if (array[i][j].getId() != id && array[i][j].getId() == -5 && array[i][j].getState().equals(Cell.State.RECRYSTALIZED)) {
+                    cells.add(array[i][j]);
+                }
+            }
+        }
         return cells;
     }
 
@@ -586,7 +658,7 @@ public class MultiscaleModel {
     private void fillEnergyArray() {
         for (int i = 0; i < energyArray.length; i++) {
             for (int j = 0; j < energyArray[0].length; j++) {
-                energyArray[i][j].setRgb(new int[]{200 * array[i][j].getEnergy() / 15 + 55, 0, 0});
+                energyArray[i][j].setRgb(new int[]{200 * array[i][j].getEnergy() / 10 + 55, 0, 0});
             }
         }
         return;
@@ -685,10 +757,9 @@ public class MultiscaleModel {
     }
 
     private void updateEnergyArray() {
-        Cell c;
         for (int i = 0; i < energyArray.length; i++) {
             for (int j = 0; j < energyArray[0].length; j++) {
-                if ((c = array[i][j]).getState().equals(Cell.State.RECRYSTALIZED)) {
+                if (array[i][j].getState().equals(Cell.State.RECRYSTALIZED)) {
                     energyArray[i][j].setRgb(new int[]{0, 0, 0});
                 }
             }
